@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://feng19.com/2017/10/14/Erlang%20%E5%8F%91%E5%B8%83%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E6%B5%81%E7%A8%8B-1/</loc>
+    <lastmod>2022-07-11</lastmod>
+  </url>  <url>
+    <loc>https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-1%20%E4%BB%A3%E7%A0%81%E7%83%AD%E6%9B%B4/</loc>
+    <lastmod>2022-07-11</lastmod>
+  </url>  <url>
+    <loc>https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-2%20gen_server%E7%83%AD%E6%9B%B4/</loc>
+    <lastmod>2022-07-11</lastmod>
+  </url>  <url>
+    <loc>https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-3%20%E5%8D%87%E7%BA%A7%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%B7%A5%E5%85%B7%E8%AE%B2%E8%A7%A3/</loc>
+    <lastmod>2022-07-11</lastmod>
+  </url>  <url>
+    <loc>https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-4%20%E5%8D%87%E7%BA%A7%E6%8C%87%E4%BB%A4%E8%AE%B2%E8%A7%A3/</loc>
+    <lastmod>2022-07-11</lastmod>
+  </url>  <url>
+    <loc>https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-5%20supervisor%E6%9B%B4%E6%96%B0%E8%AF%B4%E6%98%8E/</loc>
+    <lastmod>2022-07-11</lastmod>
+  </url>  <url>
+    <loc>https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-6%20%E5%8D%87%E7%BA%A7%E6%A8%A1%E5%9D%97%E4%B8%8E%E8%BF%9B%E7%A8%8B/</loc>
+    <lastmod>2022-07-11</lastmod>
+  </url>  <url>
+    <loc>https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-7%20sys%E6%A8%A1%E5%9D%97/</loc>
+    <lastmod>2022-07-11</lastmod>
+  </url>  <url>
+    <loc>https://feng19.com/2019/08/08/Erlang-%E8%B0%83%E4%BC%98%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/</loc>
+    <lastmod>2022-07-11</lastmod>
+  </url>  <url>
+    <loc>https://feng19.com/2018/04/08/erlang-solutions-%E5%9B%BD%E5%86%85%E9%95%9C%E5%83%8F%E5%9C%B0%E5%9D%80/</loc>
+    <lastmod>2022-07-11</lastmod>
+  </url>  <url>
+    <loc>https://feng19.com/2019/01/22/erlang%E7%A8%8B%E5%BA%8F%E8%B0%83%E8%AF%95%E6%B5%85%E6%9E%90/</loc>
+    <lastmod>2022-07-11</lastmod>
+  </url>  <url>
+    <loc>https://feng19.com/2019/03/14/rebar3_reloader_usage/</loc>
+    <lastmod>2022-07-11</lastmod>
+  </url>  <url>
+    <loc>https://feng19.com/2019/03/03/sf_transform_usage/</loc>
+    <lastmod>2022-07-11</lastmod>
+  </url>  <url>
+    <loc>https://feng19.com/2022/07/08/wechat_for_elixir_usage/</loc>
+    <lastmod>2022-07-11</lastmod>
+  </url>  <url>
+    <loc>https://feng19.com/2019/08/22/%E5%88%A9%E7%94%A8%E7%A0%81%E4%BA%91%E9%95%9C%E5%83%8F%E5%8A%A0%E9%80%9Fkerl/</loc>
+    <lastmod>2022-07-11</lastmod>
+  </url>  <url>
+    <loc>https://feng19.com/2019/07/31/%E6%B8%B8%E6%88%8F%E5%8D%8F%E8%AE%AE%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91%E8%B7%AF%E7%94%B1%E8%AE%BE%E8%AE%A1/</loc>
+    <lastmod>2022-07-11</lastmod>
+  </url>  <url>
+    <loc>https://feng19.com/2019/01/16/%E7%BB%99rebar3%E5%91%BD%E4%BB%A4%E5%A2%9E%E5%8A%A0shell%E4%B8%8B%E8%87%AA%E5%8A%A8%E8%A1%A5%E5%85%A8/</loc>
+    <lastmod>2022-07-11</lastmod>
+  </url>
+</urlset>

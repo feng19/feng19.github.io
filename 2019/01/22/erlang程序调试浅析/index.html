@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"feng19.com","root":"/","scheme":"Mist","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="程序调试，俗称 debug 一个程序员基本 80% 的时间都在 debug 这是一个很恐怖的比例,我们也不得不去面对 为了减少这个比例,学好调试方法就变得很重要,可以很大程度上提高开发效率">
+<meta property="og:type" content="article">
+<meta property="og:title" content="erlang程序调试浅析">
+<meta property="og:url" content="https://feng19.com/2019/01/22/erlang%E7%A8%8B%E5%BA%8F%E8%B0%83%E8%AF%95%E6%B5%85%E6%9E%90/">
+<meta property="og:site_name" content="在路上">
+<meta property="og:description" content="程序调试，俗称 debug 一个程序员基本 80% 的时间都在 debug 这是一个很恐怖的比例,我们也不得不去面对 为了减少这个比例,学好调试方法就变得很重要,可以很大程度上提高开发效率">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-01-22T15:10:00.000Z">
+<meta property="article:modified_time" content="2022-07-11T09:50:31.877Z">
+<meta property="article:author" content="feng19">
+<meta property="article:tag" content="erlang">
+<meta property="article:tag" content="trace">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://feng19.com/2019/01/22/erlang%E7%A8%8B%E5%BA%8F%E8%B0%83%E8%AF%95%E6%B5%85%E6%9E%90/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>erlang程序调试浅析 | 在路上</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?8f25ec0a3f57bade10cde5125c9425d2";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="在路上" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line toggle-line-first"></span>
+        <span class="toggle-line toggle-line-middle"></span>
+        <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">在路上</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">On the road!</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#调试方法-技巧"><span class="nav-number">1.</span> <span class="nav-text">调试方法&#x2F;技巧</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#通用流程"><span class="nav-number">1.1.</span> <span class="nav-text">通用流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#调试方法"><span class="nav-number">1.2.</span> <span class="nav-text">调试方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#trace"><span class="nav-number">1.3.</span> <span class="nav-text">trace</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用方法"><span class="nav-number">2.</span> <span class="nav-text">使用方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#使用前须知"><span class="nav-number">2.1.</span> <span class="nav-text">使用前须知</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#示例"><span class="nav-number">2.2.</span> <span class="nav-text">示例</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#应用启动trace-example-app"><span class="nav-number">2.2.1.</span> <span class="nav-text">应用启动trace_example_app:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#服务器socket进程模块te-tcp-handler"><span class="nav-number">2.2.2.</span> <span class="nav-text">服务器socket进程模块te_tcp_handler:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用示例trace-example"><span class="nav-number">2.2.3.</span> <span class="nav-text">使用示例trace_example:</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#应用拓展"><span class="nav-number">2.3.</span> <span class="nav-text">应用拓展</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结论"><span class="nav-number">3.</span> <span class="nav-text">结论</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#扁鹊三兄弟的故事"><span class="nav-number">3.1.</span> <span class="nav-text">扁鹊三兄弟的故事</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#故事结论"><span class="nav-number">3.2.</span> <span class="nav-text">故事结论</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#防范"><span class="nav-number">3.3.</span> <span class="nav-text">防范</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#治前"><span class="nav-number">3.4.</span> <span class="nav-text">治前</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#治中"><span class="nav-number">3.5.</span> <span class="nav-text">治中</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考连接"><span class="nav-number">4.</span> <span class="nav-text">参考连接</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="feng19"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">feng19</p>
+  <div class="site-description" itemprop="description">程序路上 成长路上 梦想路上</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/feng19" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;feng19" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:feng_19@foxmail.com" title="E-Mail → mailto:feng_19@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://feng19.com/2019/01/22/erlang%E7%A8%8B%E5%BA%8F%E8%B0%83%E8%AF%95%E6%B5%85%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="feng19">
+      <meta itemprop="description" content="程序路上 成长路上 梦想路上">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="在路上">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          erlang程序调试浅析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-01-22 23:10:00" itemprop="dateCreated datePublished" datetime="2019-01-22T23:10:00+08:00">2019-01-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 17:50:31" itemprop="dateModified" datetime="2022-07-11T17:50:31+08:00">2022-07-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/erlang/" itemprop="url" rel="index"><span itemprop="name">erlang</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2019/01/22/erlang%E7%A8%8B%E5%BA%8F%E8%B0%83%E8%AF%95%E6%B5%85%E6%9E%90/" class="post-meta-item leancloud_visitors" data-flag-title="erlang程序调试浅析" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2019/01/22/erlang%E7%A8%8B%E5%BA%8F%E8%B0%83%E8%AF%95%E6%B5%85%E6%9E%90/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/01/22/erlang程序调试浅析/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>程序调试，俗称 debug</p>
+<p>一个程序员基本 80% 的时间都在 debug</p>
+<p>这是一个很恐怖的比例,我们也不得不去面对</p>
+<p>为了减少这个比例,学好调试方法就变得很重要,可以很大程度上提高开发效率</p>
+<a id="more"></a>
+
+<h2 id="调试方法-技巧"><a href="#调试方法-技巧" class="headerlink" title="调试方法/技巧"></a>调试方法/技巧</h2><h3 id="通用流程"><a href="#通用流程" class="headerlink" title="通用流程"></a>通用流程</h3><ul>
+<li>定位问题</li>
+<li>复现问题</li>
+<li>解决问题</li>
+</ul>
+<h3 id="调试方法"><a href="#调试方法" class="headerlink" title="调试方法"></a>调试方法</h3><ul>
+<li>断点调试 - <code>debugger</code></li>
+<li>打印输出 - <code>io:format</code></li>
+<li>跟踪 - <code>trace</code></li>
+</ul>
+<h3 id="trace"><a href="#trace" class="headerlink" title="trace"></a>trace</h3><p>• <strong>sys</strong> 是一个标准的OTP, 可以允许自 定义trace函数, 记录所有类型的事件等等. 它非常完善且可以很好地用于开发. 但它会稍微影响处于生产 环境的系统, 因为它没有把IO重定向到远程的shell中, 而且他没有限制trace消息的速度。 不过还是推荐阅读其文档模块.</p>
+<p>• <strong>dbg</strong> 也是一个标准的OTP. 它的接口在可用性方面显得有点笨拙。但它完全足以满足你所需。问题在于: 你必须要知道你要做什么,因为 dbg可以记录一切， 并在2秒内把系统搞崩溃。</p>
+<p>• <strong>tracing BIFs</strong> 作为一个Erang的模块可用。 它们大多作为原始块(the raw blocks)由这个列表中提到的application所调用,但由于他们处于较底层， 比较抽象， 用起来也非常困难。</p>
+<p>• <strong>redbug</strong> 是可以在正式的生产 运行系统中使用的trace库， 是eper 的一部分， 它内部有一个速度限制开关， 和一个不错的可用接口。 为了使用它， 你必须把eper的所有依赖项都加上。 这个工具箱非常全面， 你会体验到一次非常有趣的安装。</p>
+<p>• <strong>recon_trace</strong> 是recon中负 责trace的模块。 目 的是和redbug有相同的安全水平,但却不要这么多的依赖项。 接口也不一样， 速度限制选项并不完全相同。 它可以只trace指定的函数调用， 没有trace send/recv message （实际在使用OTP的application里面根本没有必要支持trace message这种机制）</p>
+<blockquote>
+<p>ps: 此段摘自: <a href="https://www.cnblogs.com/zhongwencool/p/erlang_trace.html" target="_blank" rel="noopener">Erlang trace总结</a></p>
+</blockquote>
+<p>其中<code>recon_trace</code>功能丰富,使用门槛底,可以经常使用,以下就以<code>recon_trace</code>的使用方法进行深入</p>
+<h2 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h2><p>在日常调试中,调试的开始必须要确认跟踪的目标,可以从猜测目标开始进行跟踪,逐步找到出问题的点.</p>
+<p>通常其他语言的跟踪都是提供MFA这样的跟踪目标给到大家去确认,但是在erlang的世界里面,还可以增加另外一种纬度来确认目标,就是进程,因为erlang的轻量级进程可以同时运行非常巨大的进程组,因此如果在erlang的时间里面缺少这种纬度的话,调试跟踪是寸步难行的.</p>
+<p>试想一下一个服务器里面有10W用户,那么就有10W的进程(至少),当我们想在线上跟踪一个问题的时候,如果只有对方法名的跟踪方式,那么如果这10W用户中有10%在可能会使用到这个方法,那么就是1W个进程,如果在线上直接开启跟踪调试,那么可能瞬间可以刷爆服务器.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">       _,--------,_      _,--------,_</span><br><span class="line">    ,-&#39;            &#96;-,,-&#39;            &#96;-,</span><br><span class="line"> ,-&#39;              ,-&#39;  &#39;-,              &#96;-,</span><br><span class="line">|   Matching    -&#39;        &#39;-   Matching    |</span><br><span class="line">|     Pids     |  Getting   |    Trace     |</span><br><span class="line">|              |   Traced   |  Patterns    |</span><br><span class="line">|               -,        ,-               |</span><br><span class="line"> &#39;-,              &#39;-,  ,-&#39;              ,-&#39;</span><br><span class="line">    &#39;-,_          _,-&#39;&#39;-,_          _,-&#39;</span><br><span class="line">        &#39;--------&#39;        &#39;--------&#39;</span><br></pre></td></tr></table></figure>
+
+<p><code>recon_trace:calls/3</code>定义:</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">-type matchspec<span class="params">()</span>    :: [&#123;[term<span class="params">()</span>], [term<span class="params">()</span>], [term<span class="params">()</span>]&#125;].</span><br><span class="line">-type shellfun<span class="params">()</span>     :: fun<span class="params">((_)</span> -&gt; term<span class="params">()</span>).</span><br><span class="line">-type formatterfun<span class="params">()</span> :: fun<span class="params">((_)</span> -&gt; iodata<span class="params">()</span>).</span><br><span class="line">-type millisecs<span class="params">()</span>    :: non_neg_integer<span class="params">()</span>.</span><br><span class="line">-type pidspec<span class="params">()</span>      :: all | existing | new | recon:pid_term<span class="params">()</span>.</span><br><span class="line">-type max_traces<span class="params">()</span>   :: non_neg_integer<span class="params">()</span>.</span><br><span class="line">-type max_rate<span class="params">()</span>     :: &#123;max_traces<span class="params">()</span>, millisecs<span class="params">()</span>&#125;.</span><br><span class="line"></span><br><span class="line">                   <span class="comment">%% trace options</span></span><br><span class="line">-type options<span class="params">()</span>      :: [ &#123;pid, pidspec<span class="params">()</span> | [pidspec<span class="params">()</span>,...]&#125; <span class="comment">% default: all</span></span><br><span class="line">                        | &#123;timestamp, formatter | trace&#125;     <span class="comment">% default: formatter</span></span><br><span class="line">                        | &#123;args, args | arity&#125;               <span class="comment">% default: args</span></span><br><span class="line">                        | &#123;io_server, pid()&#125;                 <span class="comment">% default: group_leader()</span></span><br><span class="line">                        | &#123;formatter, formatterfun()&#125;        <span class="comment">% default: internal formatter</span></span><br><span class="line">                        | return_to | &#123;return_to, boolean()&#125; <span class="comment">% default: false</span></span><br><span class="line">                   <span class="comment">%% match pattern options</span></span><br><span class="line">                        | &#123;scope, global | local&#125;            <span class="comment">% default: global</span></span><br><span class="line">                        ].</span><br><span class="line"></span><br><span class="line">-type mod<span class="params">()</span>          :: '_' | module<span class="params">()</span>.</span><br><span class="line">-type fn<span class="params">()</span>           :: '_' | atom<span class="params">()</span>.</span><br><span class="line">-type args<span class="params">()</span>         :: '_' | 0..<span class="number">255</span> | return_trace | matchspec() | shellfun().</span><br><span class="line">-type tspec<span class="params">()</span>        :: &#123;mod<span class="params">()</span>, fn<span class="params">()</span>, args<span class="params">()</span>&#125;.</span><br><span class="line">-type max<span class="params">()</span>          :: max_traces<span class="params">()</span> | max_rate<span class="params">()</span>.</span><br><span class="line">-type num_matches<span class="params">()</span>  :: non_neg_integer<span class="params">()</span>.</span><br><span class="line"><span class="keyword">-spec</span> calls<span class="params">(tspec() | [tspec(),...], max(), options())</span> -&gt; num_matches<span class="params">()</span>.</span><br></pre></td></tr></table></figure>
+
+<h3 id="使用前须知"><a href="#使用前须知" class="headerlink" title="使用前须知"></a>使用前须知</h3><ul>
+<li>模块必须确保已经加载,否则即使设置了跟踪,也是没有效果的</li>
+<li>指定了方法名的话,如果方法设置了<code>-inline()</code>,因为<code>inline</code>的机制,实际上已经运行时已经没有方法调用了,因此跟踪无效</li>
+<li>返回值为数字,表示成功匹配跟踪了多少个条目</li>
+<li><code>scope</code>的选择: <code>local</code>表示可以跟踪未导出的方法; <code>global</code>表示只跟踪导出的方法</li>
+</ul>
+<h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><p>目前使用比较多的用法是在服务器端监听客户端是否有发送消息协议,能看到每次数据的传输协议,看到完成协议处理之后的结果返回,能针对单个进程去做,也可以针对一类进程去做</p>
+<p>另外也可以将结果保存成文本,方便分析问题,相比于添加打印代码的调试方式,可以说这种方式是有极大的便捷性,因为不需要在添加代码,然后再编译加载新代码才能使用,这种方法只需要在命令行界面输入,即可使用</p>
+<p>示例是模拟客户端发送消息给服务器,服务器查看是否收到,查看传输的数据是否正常,处理的结果是否正常,等等</p>
+<h4 id="应用启动trace-example-app"><a href="#应用启动trace-example-app" class="headerlink" title="应用启动trace_example_app:"></a>应用启动<code>trace_example_app</code>:</h4><figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">start</span><span class="params">(_StartType, _StartArgs)</span> -&gt;</span></span><br><span class="line">    <span class="comment">% 使用ranch开启tcp端口</span></span><br><span class="line">    ranch:start_listener(tcp, ranch_tcp, #&#123;connection_type =&gt; worker, socket_opts =&gt; [&#123;port, <span class="number">0</span>&#125;]&#125;, te_tcp_handler, []),</span><br><span class="line">    trace_example_sup:start_link().</span><br></pre></td></tr></table></figure>
+
+<h4 id="服务器socket进程模块te-tcp-handler"><a href="#服务器socket进程模块te-tcp-handler" class="headerlink" title="服务器socket进程模块te_tcp_handler:"></a>服务器<code>socket</code>进程模块<code>te_tcp_handler</code>:</h4><figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">-module</span><span class="params">(te_tcp_handler)</span>.</span><br><span class="line"><span class="keyword">-behaviour</span><span class="params">(ranch_protocol)</span>.</span><br><span class="line"><span class="keyword">-behaviour</span><span class="params">(gen_server)</span>.</span><br><span class="line"></span><br><span class="line"><span class="comment">%% 处理tcp消息</span></span><br><span class="line"><span class="function"><span class="title">handle_info</span><span class="params">(&#123;tcp, Socket, ReqBinary&#125;, State)</span> -&gt;</span></span><br><span class="line">    <span class="keyword">case</span> dispatch_msg(ReqBinary, State) <span class="keyword">of</span></span><br><span class="line">        &#123;ok, RespBinList, NewState&#125; -&gt;</span><br><span class="line">            send(RespBinList, Socket),</span><br><span class="line">            ?SET_ACTIVE_ONCE(Socket),</span><br><span class="line">            &#123;noreply, NewState&#125;;</span><br><span class="line">        &#123;ok, NewState&#125; -&gt;</span><br><span class="line">            ?SET_ACTIVE_ONCE(Socket),</span><br><span class="line">            &#123;noreply, NewState&#125;;</span><br><span class="line">        &#123;stop, Reason, RespBinList, NewState&#125; -&gt;</span><br><span class="line">            io:format(<span class="string">"net_handler stop err:~p"</span>, [Reason]),</span><br><span class="line">            send(RespBinList, Socket),</span><br><span class="line">            ?SET_ACTIVE_ONCE(Socket),</span><br><span class="line">            &#123;stop, normal, NewState&#125;;</span><br><span class="line">        &#123;stop, Reason, NewState&#125; -&gt;</span><br><span class="line">            io:format(<span class="string">"net_handler stop err:~p"</span>, [Reason]),</span><br><span class="line">            ?SET_ACTIVE_ONCE(Socket),</span><br><span class="line">            &#123;stop, normal, NewState&#125;</span><br><span class="line">    <span class="keyword">end</span>;</span><br><span class="line">....</span><br><span class="line"></span><br><span class="line"><span class="comment">%% 派遣消息</span></span><br><span class="line"><span class="function"><span class="title">dispatch_msg</span><span class="params">(ReqBinary, State)</span> -&gt;</span></span><br><span class="line">    Term = jsx:decode(ReqBinary, [&#123;labels, atom&#125;, return_maps]),</span><br><span class="line">    <span class="keyword">case</span> maps:find(event, Term) <span class="keyword">of</span></span><br><span class="line">        &#123;ok, Event&#125; -&gt;</span><br><span class="line">            &#123;ok, Data&#125; = maps:find(data, Term),</span><br><span class="line">            dispatch_msg(binary_to_atom(Event, utf8), Data, State);</span><br><span class="line">        _ -&gt;</span><br><span class="line">            &#123;ok, State&#125;</span><br><span class="line">    <span class="keyword">end</span>.</span><br><span class="line"></span><br><span class="line"><span class="comment">%% 派遣消息</span></span><br><span class="line"><span class="function"><span class="title">dispatch_msg</span><span class="params">(Event, Data, State)</span> -&gt;</span></span><br><span class="line">    apply(<span class="keyword">fun</span> ?MODULE:Event/<span class="number">2</span>, [Data, State]).</span><br><span class="line"></span><br><span class="line"><span class="comment">%% 发送消息</span></span><br><span class="line">send(RespBinList, Socket) <span class="keyword">when</span> is_list(RespBinList) -&gt;</span><br><span class="line">    lists:foreach(</span><br><span class="line">        <span class="keyword">fun</span>(Binary) -&gt;</span><br><span class="line">            gen_tcp:send(Socket, Binary)</span><br><span class="line">        <span class="keyword">end</span>, RespBinList);</span><br><span class="line">send(Binary, Socket) -&gt;</span><br><span class="line">    gen_tcp:send(Socket, Binary).</span><br><span class="line"></span><br><span class="line"><span class="comment">%% 处理登录消息</span></span><br><span class="line">login(#&#123;account := Account&#125;, State) -&gt;</span><br><span class="line">    Name = lists:concat([binary_to_list(Account), <span class="string">"_server"</span>]),</span><br><span class="line">    register(list_to_atom(Name), self()),</span><br><span class="line">    &#123;ok, State#state&#123;account = Account&#125;&#125;.</span><br><span class="line"></span><br><span class="line"><span class="comment">%% 处理心跳消息</span></span><br><span class="line">heartbeat(_Data, State) -&gt;</span><br><span class="line">    &#123;ok, State#state&#123;last_heartbeat_time = erlang:system_time(second)&#125;&#125;.</span><br><span class="line"></span><br><span class="line"><span class="comment">%% 处理进入房间消息</span></span><br><span class="line">enter_room(#&#123;room_type := RoomType&#125;, State) -&gt;</span><br><span class="line">    &#123;ok, State#state&#123;room_type = RoomType&#125;&#125;.</span><br><span class="line"></span><br><span class="line"><span class="comment">%% 处理离开房间消息</span></span><br><span class="line">leave_room(_Data, State) -&gt;</span><br><span class="line">    &#123;ok, State#state&#123;room_type = undefined&#125;&#125;.</span><br></pre></td></tr></table></figure>
+
+<h4 id="使用示例trace-example"><a href="#使用示例trace-example" class="headerlink" title="使用示例trace_example:"></a>使用示例<code>trace_example</code>:</h4><figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">trace</span><span class="params">(first)</span> -&gt;</span></span><br><span class="line">    code:ensure_loaded(te_tcp_handler),</span><br><span class="line">    <span class="comment">%% 查看客户端发送的数据</span></span><br><span class="line">    NumMatches = recon_trace:calls(&#123;te_tcp_handler, dispatch_msg, '_'&#125;, <span class="number">3</span>, [&#123;scope, local&#125;]),</span><br><span class="line">    io:format(<span class="string">"~nNumMatches:~p~n"</span>, [NumMatches]),</span><br><span class="line">    te_client:start(jake_ma_1),</span><br><span class="line">    timer:sleep(<span class="number">3000</span>),</span><br><span class="line">    te_client:stop(jake_ma_1),</span><br><span class="line">    recon_trace:clear();</span><br><span class="line"><span class="function"><span class="title">trace</span><span class="params">(arity)</span> -&gt;</span></span><br><span class="line">    <span class="comment">%% 指定参数数量</span></span><br><span class="line">    recon_trace:calls(&#123;te_tcp_handler, dispatch_msg, <span class="number">3</span>&#125;, <span class="number">3</span>, [&#123;scope, local&#125;]),</span><br><span class="line">    te_client:start(jake_ma_1),</span><br><span class="line">    timer:sleep(<span class="number">3000</span>),</span><br><span class="line">    te_client:stop(jake_ma_1),</span><br><span class="line">    recon_trace:clear();</span><br><span class="line"><span class="function"><span class="title">trace</span><span class="params">(args)</span> -&gt;</span></span><br><span class="line">    <span class="comment">%% 参数列表</span></span><br><span class="line">    MatchSpec = ets:fun2ms(<span class="keyword">fun</span>(&#123;'_', '_', '_'&#125;) -&gt; ok <span class="keyword">end</span>),</span><br><span class="line">    recon_trace:calls(&#123;te_tcp_handler, dispatch_msg, MatchSpec&#125;, <span class="number">3</span>, [&#123;scope, local&#125;]),</span><br><span class="line">    te_client:start(jake_ma_1),</span><br><span class="line">    te_client:enter_room(jake_ma_1, <span class="number">1</span>),</span><br><span class="line">    timer:sleep(<span class="number">3000</span>),</span><br><span class="line">    te_client:stop(jake_ma_1),</span><br><span class="line">    recon_trace:clear();</span><br><span class="line"><span class="function"><span class="title">trace</span><span class="params">(args2)</span> -&gt;</span></span><br><span class="line">    <span class="comment">%% 参数列表</span></span><br><span class="line">    MatchSpec = ets:fun2ms(<span class="keyword">fun</span>(&#123;enter_room, '_', '_'&#125;) -&gt; ok <span class="keyword">end</span>),</span><br><span class="line">    recon_trace:calls(&#123;te_tcp_handler, dispatch_msg, MatchSpec&#125;, <span class="number">3</span>, [&#123;scope, local&#125;]),</span><br><span class="line">    te_client:start(jake_ma_1),</span><br><span class="line">    te_client:enter_room(jake_ma_1, <span class="number">1</span>),</span><br><span class="line">    timer:sleep(<span class="number">3000</span>),</span><br><span class="line">    te_client:stop(jake_ma_1),</span><br><span class="line">    recon_trace:clear();</span><br><span class="line"><span class="function"><span class="title">trace</span><span class="params">(filter_heartbeat)</span> -&gt;</span></span><br><span class="line">    <span class="comment">%% 排除心跳协议</span></span><br><span class="line">    MatchSpec = ets:fun2ms(<span class="keyword">fun</span>(&#123;Event, '_', '_'&#125;) <span class="keyword">when</span> Event =/= heartbeat -&gt; ok <span class="keyword">end</span>),</span><br><span class="line">    recon_trace:calls(&#123;te_tcp_handler, dispatch_msg, MatchSpec&#125;, <span class="number">3</span>, [&#123;scope, local&#125;]),</span><br><span class="line">    te_client:start(jake_ma_1),</span><br><span class="line">    te_client:enter_room(jake_ma_1, <span class="number">1</span>),</span><br><span class="line">    te_client:leave_room(jake_ma_1),</span><br><span class="line">    timer:sleep(<span class="number">3000</span>),</span><br><span class="line">    te_client:stop(jake_ma_1),</span><br><span class="line">    recon_trace:clear();</span><br><span class="line"><span class="function"><span class="title">trace</span><span class="params">(return_trace)</span> -&gt;</span></span><br><span class="line">    <span class="comment">%% 跟踪返回值</span></span><br><span class="line">    MatchSpec = ets:fun2ms(<span class="keyword">fun</span>(&#123;Event, '_', '_'&#125;) <span class="keyword">when</span> Event =/= heartbeat -&gt; return_trace() <span class="keyword">end</span>),</span><br><span class="line">    recon_trace:calls(&#123;te_tcp_handler, dispatch_msg, MatchSpec&#125;, <span class="number">10</span>, [&#123;scope, local&#125;]),</span><br><span class="line">    te_client:start(jake_ma_1),</span><br><span class="line">    te_client:enter_room(jake_ma_1, <span class="number">1</span>),</span><br><span class="line">    te_client:leave_room(jake_ma_1),</span><br><span class="line">    timer:sleep(<span class="number">3000</span>),</span><br><span class="line">    te_client:stop(jake_ma_1),</span><br><span class="line">    recon_trace:clear();</span><br><span class="line"><span class="function"><span class="title">trace</span><span class="params">(time)</span> -&gt;</span></span><br><span class="line">    <span class="comment">%% 频率限制,每秒最多2个,超过这个频率会停掉跟踪,没有超过则继续</span></span><br><span class="line">    MatchSpec = ets:fun2ms(<span class="keyword">fun</span>(&#123;Event, '_', '_'&#125;) <span class="keyword">when</span> Event =/= heartbeat -&gt; ok <span class="keyword">end</span>),</span><br><span class="line">    recon_trace:calls(&#123;te_tcp_handler, dispatch_msg, MatchSpec&#125;, &#123;<span class="number">2</span>, <span class="number">1000</span>&#125;, [&#123;scope, local&#125;]),</span><br><span class="line">    te_client:start(jake_ma_1),</span><br><span class="line">    te_client:enter_room(jake_ma_1, <span class="number">1</span>),</span><br><span class="line">    timer:sleep(<span class="number">1000</span>),</span><br><span class="line">    te_client:leave_room(jake_ma_1),</span><br><span class="line">    te_client:enter_room(jake_ma_1, <span class="number">1</span>),</span><br><span class="line">    timer:sleep(<span class="number">1000</span>),</span><br><span class="line">    te_client:leave_room(jake_ma_1),</span><br><span class="line">    timer:sleep(<span class="number">1000</span>),</span><br><span class="line">    te_client:stop(jake_ma_1),</span><br><span class="line">    recon_trace:clear();</span><br><span class="line"><span class="function"><span class="title">trace</span><span class="params">(time2)</span> -&gt;</span></span><br><span class="line">    <span class="comment">%% 频率限制,每秒最多2个,超过这个频率会停掉跟踪,没有超过则继续</span></span><br><span class="line">    MatchSpec = ets:fun2ms(<span class="keyword">fun</span>(&#123;Event, '_', '_'&#125;) <span class="keyword">when</span> Event =/= heartbeat -&gt; ok <span class="keyword">end</span>),</span><br><span class="line">    recon_trace:calls(&#123;te_tcp_handler, dispatch_msg, MatchSpec&#125;, &#123;<span class="number">2</span>, <span class="number">1000</span>&#125;, [&#123;scope, local&#125;]),</span><br><span class="line">    te_client:start(jake_ma_1),</span><br><span class="line">    te_client:enter_room(jake_ma_1, <span class="number">1</span>),</span><br><span class="line">    te_client:leave_room(jake_ma_1),</span><br><span class="line">    te_client:enter_room(jake_ma_1, <span class="number">1</span>),</span><br><span class="line">    te_client:leave_room(jake_ma_1),</span><br><span class="line">    timer:sleep(<span class="number">3000</span>),</span><br><span class="line">    te_client:stop(jake_ma_1),</span><br><span class="line">    recon_trace:clear();</span><br><span class="line"><span class="function"><span class="title">trace</span><span class="params">(to_file)</span> -&gt;</span></span><br><span class="line">    <span class="comment">%% 结果输出到文件</span></span><br><span class="line">    MatchSpec = ets:fun2ms(<span class="keyword">fun</span>(&#123;Event, '_', '_'&#125;) <span class="keyword">when</span> Event =/= heartbeat -&gt; ok <span class="keyword">end</span>),</span><br><span class="line">    &#123;ok, IO&#125; = file:open(<span class="string">"trace_output.txt"</span>, [write]),</span><br><span class="line">    recon_trace:calls(&#123;te_tcp_handler, dispatch_msg, MatchSpec&#125;, <span class="number">10</span>, [&#123;scope, local&#125;, &#123;io_server, IO&#125;]),</span><br><span class="line">    te_client:start(jake_ma_1),</span><br><span class="line">    te_client:enter_room(jake_ma_1, <span class="number">1</span>),</span><br><span class="line">    te_client:leave_room(jake_ma_1),</span><br><span class="line">    te_client:enter_room(jake_ma_1, <span class="number">1</span>),</span><br><span class="line">    te_client:leave_room(jake_ma_1),</span><br><span class="line">    timer:sleep(<span class="number">3000</span>),</span><br><span class="line">    file:close(IO),</span><br><span class="line">    te_client:stop(jake_ma_1),</span><br><span class="line">    recon_trace:clear();</span><br><span class="line"><span class="function"><span class="title">trace</span><span class="params">(record_print)</span> -&gt;</span></span><br><span class="line">    <span class="comment">%% record数据格式化打印</span></span><br><span class="line">    MatchSpec = ets:fun2ms(<span class="keyword">fun</span>(&#123;Event, '_', '_'&#125;) <span class="keyword">when</span> Event =/= heartbeat -&gt; return_trace() <span class="keyword">end</span>),</span><br><span class="line">    recon_rec:import(te_tcp_handler),</span><br><span class="line">    recon_trace:calls(&#123;te_tcp_handler, dispatch_msg, MatchSpec&#125;, <span class="number">10</span>, [&#123;scope, local&#125;]),</span><br><span class="line">    te_client:start(jake_ma_1),</span><br><span class="line">    te_client:enter_room(jake_ma_1, <span class="number">1</span>),</span><br><span class="line">    te_client:leave_room(jake_ma_1),</span><br><span class="line">    timer:sleep(<span class="number">3000</span>),</span><br><span class="line">    recon_rec:clear(),</span><br><span class="line">    te_client:stop(jake_ma_1),</span><br><span class="line">    recon_trace:clear();</span><br><span class="line"><span class="function"><span class="title">trace</span><span class="params">(record_print2)</span> -&gt;</span></span><br><span class="line">    <span class="comment">%% record数据格式化打印, 只显示指定字段</span></span><br><span class="line">    MatchSpec = ets:fun2ms(<span class="keyword">fun</span>(&#123;Event, '_', '_'&#125;) <span class="keyword">when</span> Event =/= heartbeat -&gt; return_trace() <span class="keyword">end</span>),</span><br><span class="line">    recon_rec:import(te_tcp_handler),</span><br><span class="line">    recon_rec:limit(state, <span class="number">4</span>, [room_type]),</span><br><span class="line">    recon_trace:calls(&#123;te_tcp_handler, dispatch_msg, MatchSpec&#125;, <span class="number">10</span>, [&#123;scope, local&#125;]),</span><br><span class="line">    te_client:start(jake_ma_1),</span><br><span class="line">    te_client:enter_room(jake_ma_1, <span class="number">1</span>),</span><br><span class="line">    te_client:leave_room(jake_ma_1),</span><br><span class="line">    timer:sleep(<span class="number">3000</span>),</span><br><span class="line">    recon_rec:clear(),</span><br><span class="line">    te_client:stop(jake_ma_1),</span><br><span class="line">    recon_trace:clear();</span><br><span class="line"><span class="function"><span class="title">trace</span><span class="params">(all_pid)</span> -&gt;</span></span><br><span class="line">    <span class="comment">%% 多个进程</span></span><br><span class="line">    MatchSpec = ets:fun2ms(<span class="keyword">fun</span>(&#123;Event, '_', '_'&#125;) <span class="keyword">when</span> Event =/= heartbeat -&gt; ok <span class="keyword">end</span>),</span><br><span class="line">    recon_rec:import(te_tcp_handler),</span><br><span class="line">    recon_trace:calls(&#123;te_tcp_handler, dispatch_msg, MatchSpec&#125;, <span class="number">30</span>, [&#123;scope, local&#125;]),</span><br><span class="line">    te_client:loop_start(<span class="number">1000</span>),</span><br><span class="line">    te_client:enter_room(jake_ma_1, <span class="number">1</span>),</span><br><span class="line">    te_client:leave_room(jake_ma_1),</span><br><span class="line">    timer:sleep(<span class="number">3000</span>),</span><br><span class="line">    recon_rec:clear(),</span><br><span class="line">    te_client:loop_stop(<span class="number">1000</span>),</span><br><span class="line">    recon_trace:clear();</span><br><span class="line"><span class="function"><span class="title">trace</span><span class="params">(new_pid)</span> -&gt;</span></span><br><span class="line">    <span class="comment">%% 多个进程</span></span><br><span class="line">    MatchSpec = ets:fun2ms(<span class="keyword">fun</span>(&#123;Event, '_', '_'&#125;) <span class="keyword">when</span> Event =/= heartbeat -&gt; ok <span class="keyword">end</span>),</span><br><span class="line">    recon_rec:import(te_tcp_handler),</span><br><span class="line">    te_client:loop_start(<span class="number">1000</span>),</span><br><span class="line">    recon_trace:calls(&#123;te_tcp_handler, dispatch_msg, MatchSpec&#125;, <span class="number">30</span>, [&#123;scope, local&#125;, &#123;pid, new&#125;]),</span><br><span class="line">    te_client:enter_room(jake_ma_1, <span class="number">1</span>),</span><br><span class="line">    te_client:leave_room(jake_ma_1),</span><br><span class="line">    timer:sleep(<span class="number">3000</span>),</span><br><span class="line">    recon_rec:clear(),</span><br><span class="line">    te_client:loop_stop(<span class="number">1000</span>),</span><br><span class="line">    recon_trace:clear();</span><br><span class="line"><span class="function"><span class="title">trace</span><span class="params">(new_pid2)</span> -&gt;</span></span><br><span class="line">    <span class="comment">%% 多个进程</span></span><br><span class="line">    MatchSpec = ets:fun2ms(<span class="keyword">fun</span>(&#123;Event, '_', '_'&#125;) <span class="keyword">when</span> Event =/= heartbeat -&gt; ok <span class="keyword">end</span>),</span><br><span class="line">    recon_rec:import(te_tcp_handler),</span><br><span class="line">    te_client:loop_start(<span class="number">1000</span>),</span><br><span class="line">    recon_trace:calls(&#123;te_tcp_handler, dispatch_msg, MatchSpec&#125;, <span class="number">30</span>, [&#123;scope, local&#125;, &#123;pid, new&#125;]),</span><br><span class="line">    te_client:start(jake_ma_1001),</span><br><span class="line">    te_client:enter_room(jake_ma_1001, <span class="number">1</span>),</span><br><span class="line">    te_client:leave_room(jake_ma_1001),</span><br><span class="line">    timer:sleep(<span class="number">3000</span>),</span><br><span class="line">    recon_rec:clear(),</span><br><span class="line">    te_client:loop_stop(<span class="number">1001</span>),</span><br><span class="line">    recon_trace:clear();</span><br><span class="line"><span class="function"><span class="title">trace</span><span class="params">(pid)</span> -&gt;</span></span><br><span class="line">    <span class="comment">%% 指定进程</span></span><br><span class="line">    MatchSpec = ets:fun2ms(<span class="keyword">fun</span>(&#123;Event, '_', '_'&#125;) <span class="keyword">when</span> Event =/= heartbeat -&gt; ok <span class="keyword">end</span>),</span><br><span class="line">    recon_rec:import(te_tcp_handler),</span><br><span class="line">    te_client:loop_start(<span class="number">1000</span>),</span><br><span class="line">    te_client:start(jake_ma_1001),</span><br><span class="line">    Pid = wait_name(jake_ma_1001_server),</span><br><span class="line">    recon_trace:calls(&#123;te_tcp_handler, dispatch_msg, MatchSpec&#125;, <span class="number">30</span>, [&#123;scope, local&#125;, &#123;pid, Pid&#125;]),</span><br><span class="line">    te_client:enter_room(jake_ma_1001, <span class="number">1</span>),</span><br><span class="line">    te_client:leave_room(jake_ma_1001),</span><br><span class="line">    timer:sleep(<span class="number">3000</span>),</span><br><span class="line">    recon_rec:clear(),</span><br><span class="line">    te_client:loop_stop(<span class="number">1001</span>),</span><br><span class="line">    recon_trace:clear().</span><br></pre></td></tr></table></figure>
+
+<h3 id="应用拓展"><a href="#应用拓展" class="headerlink" title="应用拓展"></a>应用拓展</h3><ul>
+<li>经常使用的定义可以封装成方法加入到<code>user_default</code>模块里面</li>
+</ul>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>我们试着将一个程序系统跟人体系统进行类比,可以发现:</p>
+<p>程序出bug =&gt;  人生病</p>
+<p>找bug(调试) =&gt; 诊断病因</p>
+<p>我们知道中医诊断方法,四诊: <strong>望闻问切</strong></p>
+<ul>
+<li><strong>望</strong>: 观察病人的身体状况，包括面色、舌苔等;</li>
+<li><strong>闻</strong>: 听病人的说话、咳嗽、喘息，并嗅其口中或身上是否有异味;</li>
+<li><strong>问</strong>: 询问病人症状，以及患病史等;</li>
+<li><strong>切</strong>: 用手把脉或按腹部诊察是否有异常</li>
+</ul>
+<p>以上都是通过使用不同的手段去对人体系统进行信息了解,</p>
+<p>只有当了解的信息能匹配到具体的病状,才能诊断出是什么问题.</p>
+<p>人可能生不同的病,种类非常的多,现代医学越来越发达,开发出了越来越多的诊断仪器来帮助医生找出病因</p>
+<p>我们开发的系统也是一样,问题的种类同样有非常多种,并不是所有的问题都能用一种手段就能诊断出问题,<strong>因此多掌握一种trace方法能让调试有更多的选择</strong></p>
+<p>最后我们再来讲一个跟医学有关的小故事:</p>
+<h3 id="扁鹊三兄弟的故事"><a href="#扁鹊三兄弟的故事" class="headerlink" title="扁鹊三兄弟的故事"></a>扁鹊三兄弟的故事</h3><blockquote>
+<p>根据典记<br>魏文王曾求教于名医扁鹊：“你们家兄弟三人，都精于医术，谁是医术最好的呢？”<br>扁鹊：“大哥最好，二哥差些，我是三人中最差的一个。”<br>魏王不解地说：“请你介绍的详细些。”<br>扁鹊解释说：“<br>大哥治病，是在病情发作之前，那时候病人自己还不觉得有病，但大哥就下药铲除了病根，使他的医术难以被人认可，所以没有名气，只是在我们家中被推崇备至。</p>
+<p>我的二哥治病，是在病初起之时，症状尚不十分明显，病人也没有觉得痛苦，二哥就能药到病除，使乡里人都认为二哥只是治小病很灵。</p>
+<p>我治病，都是在病情十分严重之时，病人痛苦万分，病人家属心急如焚。此时，他们看到我在经脉上穿刺，用针放血，或在患处敷以毒药以毒攻毒，或动大手术直指病灶，使重病人病情得到缓解或很快治愈，所以我名闻天下。”</p>
+<p>魏王大悟。</p>
+</blockquote>
+<h3 id="故事结论"><a href="#故事结论" class="headerlink" title="故事结论"></a>故事结论</h3><blockquote>
+<p>解决患难者强，防患于未然者神</p>
+</blockquote>
+<ul>
+<li>我们debug的也很像看病,也可以分为三个阶段进行</li>
+<li>防范 =&gt; 编码规范 </li>
+<li>治前 =&gt; 代码测试</li>
+<li>治中 =&gt; 调试方法</li>
+</ul>
+<h3 id="防范"><a href="#防范" class="headerlink" title="防范"></a>防范</h3><blockquote>
+<p>  <a href="https://github.com/feng19/erlang_guidelines" target="_blank" rel="noopener">代码规范 erlang_guidelines</a></p>
+</blockquote>
+<ul>
+<li>代码可读性 </li>
+<li>模块区分</li>
+<li>方法功能区分</li>
+<li>…</li>
+</ul>
+<h3 id="治前"><a href="#治前" class="headerlink" title="治前"></a>治前</h3><ul>
+<li><p>单元测试 </p>
+<blockquote>
+<p>Erlang趣学指南:24章 - Eunit: 单元测试框架</p>
+</blockquote>
+</li>
+<li><p>集成测试 </p>
+<blockquote>
+<p>Erlang趣学指南:28章 - 不寻常的Common Test</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="治中"><a href="#治中" class="headerlink" title="治中"></a>治中</h3><ul>
+<li>调试方法</li>
+</ul>
+<p>在处理完bug之后,可以多思考如果防范于未然,避免类似的问题再出现</p>
+<p><strong>这里并没有结束,只是新的开始</strong></p>
+<h2 id="参考连接"><a href="#参考连接" class="headerlink" title="参考连接"></a>参考连接</h2><ul>
+<li><a href="https://zhuanlan.zhihu.com/p/26824111" target="_blank" rel="noopener">工作中常见的程序调试方法</a></li>
+<li><a href="https://www.cnblogs.com/zhongwencool/p/erlang_trace.html" target="_blank" rel="noopener">Erlang trace总结</a></li>
+<li><a href="http://erlang.org/doc/apps/observer/ttb_ug.html" target="_blank" rel="noopener">Trace Tool Builder</a></li>
+<li><a href="http://ferd.github.io/recon/recon_trace.html" target="_blank" rel="noopener">recon_trace</a></li>
+<li><a href="https://learnyousomeerlang.com/content" target="_blank" rel="noopener">Learn you some erlang</a></li>
+<li><a href="http://www.erlang-factory.com/upload/presentations/316/dbg[1].pdf" target="_blank" rel="noopener">dbg</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>梦想基金</div>
+  <button onclick="document.getElementById('post-reward').classList.toggle('active');">
+    赞赏
+  </button>
+  <div id="post-reward">
+      
+      <div>
+        <img src="/images/wechatpay.png" alt="feng19 微信">
+        <p>微信</p>
+      </div>
+      
+      <div>
+        <img src="/images/alipay.png" alt="feng19 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/erlang/" rel="tag"># erlang</a>
+              <a href="/tags/trace/" rel="tag"># trace</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/03/03/sf_transform_usage/" rel="prev" title="sf_transform 使用指南">
+      <i class="fa fa-chevron-left"></i> sf_transform 使用指南
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/01/16/%E7%BB%99rebar3%E5%91%BD%E4%BB%A4%E5%A2%9E%E5%8A%A0shell%E4%B8%8B%E8%87%AA%E5%8A%A8%E8%A1%A5%E5%85%A8/" rel="next" title="给rebar3命令增加shell下自动补全">
+      给rebar3命令增加shell下自动补全 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="http://www.beian.miit.gov.cn/" rel="noopener" target="_blank">粤ICP备20060017号 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">feng19</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"VDj7hFAA8eL6I5UmENlytJhh-gzGzoHsz","app_key":"AOi8dJU8VtxgAuyaPcplC9lP","server_url":null,"security":true};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://feng19.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "https://feng19.com/2019/01/22/erlang%E7%A8%8B%E5%BA%8F%E8%B0%83%E8%AF%95%E6%B5%85%E6%9E%90/";
+    this.page.identifier = "2019/01/22/erlang程序调试浅析/";
+    this.page.title = "erlang程序调试浅析";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://feng19.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"feng19.com","root":"/","scheme":"Mist","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="gitee 下载加速已失效，因为 gitee 在下载页面加了机器验证，无法再通过命令行来下载，目前国内安装erlang最优解，建议使用asdf来安装： 1OTP_GITHUB_URL&#x3D;&quot;https:&#x2F;&#x2F;hub.fastgit.org&#x2F;erlang&#x2F;otp&quot; asdf install erlang 23.0  如有更好的方式，请告知本人，谢谢 最近在用kerl安装不同版本的erlang，因为kerl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="利用码云镜像加速kerl">
+<meta property="og:url" content="https://feng19.com/2019/08/22/%E5%88%A9%E7%94%A8%E7%A0%81%E4%BA%91%E9%95%9C%E5%83%8F%E5%8A%A0%E9%80%9Fkerl/">
+<meta property="og:site_name" content="在路上">
+<meta property="og:description" content="gitee 下载加速已失效，因为 gitee 在下载页面加了机器验证，无法再通过命令行来下载，目前国内安装erlang最优解，建议使用asdf来安装： 1OTP_GITHUB_URL&#x3D;&quot;https:&#x2F;&#x2F;hub.fastgit.org&#x2F;erlang&#x2F;otp&quot; asdf install erlang 23.0  如有更好的方式，请告知本人，谢谢 最近在用kerl安装不同版本的erlang，因为kerl">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-08-22T09:30:00.000Z">
+<meta property="article:modified_time" content="2022-07-11T09:50:31.877Z">
+<meta property="article:author" content="feng19">
+<meta property="article:tag" content="erlang">
+<meta property="article:tag" content="kerl">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://feng19.com/2019/08/22/%E5%88%A9%E7%94%A8%E7%A0%81%E4%BA%91%E9%95%9C%E5%83%8F%E5%8A%A0%E9%80%9Fkerl/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>利用码云镜像加速kerl | 在路上</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?8f25ec0a3f57bade10cde5125c9425d2";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="在路上" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line toggle-line-first"></span>
+        <span class="toggle-line toggle-line-middle"></span>
+        <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">在路上</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">On the road!</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#update-releases"><span class="nav-number">1.</span> <span class="nav-text">update releases</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#build"><span class="nav-number">2.</span> <span class="nav-text">build</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#install"><span class="nav-number">3.</span> <span class="nav-text">install</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#脚本"><span class="nav-number">4.</span> <span class="nav-text">脚本</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考连接"><span class="nav-number">5.</span> <span class="nav-text">参考连接</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="feng19"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">feng19</p>
+  <div class="site-description" itemprop="description">程序路上 成长路上 梦想路上</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/feng19" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;feng19" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:feng_19@foxmail.com" title="E-Mail → mailto:feng_19@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://feng19.com/2019/08/22/%E5%88%A9%E7%94%A8%E7%A0%81%E4%BA%91%E9%95%9C%E5%83%8F%E5%8A%A0%E9%80%9Fkerl/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="feng19">
+      <meta itemprop="description" content="程序路上 成长路上 梦想路上">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="在路上">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          利用码云镜像加速kerl
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-22 17:30:00" itemprop="dateCreated datePublished" datetime="2019-08-22T17:30:00+08:00">2019-08-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 17:50:31" itemprop="dateModified" datetime="2022-07-11T17:50:31+08:00">2022-07-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/erlang/" itemprop="url" rel="index"><span itemprop="name">erlang</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2019/08/22/%E5%88%A9%E7%94%A8%E7%A0%81%E4%BA%91%E9%95%9C%E5%83%8F%E5%8A%A0%E9%80%9Fkerl/" class="post-meta-item leancloud_visitors" data-flag-title="利用码云镜像加速kerl" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2019/08/22/%E5%88%A9%E7%94%A8%E7%A0%81%E4%BA%91%E9%95%9C%E5%83%8F%E5%8A%A0%E9%80%9Fkerl/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/08/22/利用码云镜像加速kerl/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>gitee 下载加速已失效，因为 gitee 在下载页面加了机器验证，无法再通过命令行来下载，目前国内安装<code>erlang</code>最优解，建议使用<code>asdf</code>来安装：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">OTP_GITHUB_URL="https://hub.fastgit.org/erlang/otp" asdf install erlang 23.0</span><br></pre></td></tr></table></figure>
+
+<p>如有更好的方式，请告知本人，谢谢</p>
+<p><del>最近在用<a href="https://github.com/kerl/kerl" target="_blank" rel="noopener"><code>kerl</code></a>安装不同版本的<code>erlang</code>，因为<code>kerl</code>默认是从<a href="http://erlang.org/" target="_blank" rel="noopener">官网</a>下载包的，但是<code>erlang</code>的官网本来就慢，不知道是不是没有<code>CDN</code>或者国内没有对应的<code>CDN</code>节点，速度实在堪忧。</del></p>
+<p><del>幸好<code>kerl</code>支持动态配置从<code>github</code>的包来构建，但是测试了一下<code>github</code>的下载也是非常慢。</del></p>
+<p><del>突然灵机一动，想到码云(<code>gitee</code>)有做一下热门的开源项目的镜像，跟<code>github</code>上的项目是定时同步的，因此是否可以去利用这个呢？</del></p>
+<p><del>实验一下便知！</del></p>
+<a id="more"></a>
+
+<h2 id="update-releases"><a href="#update-releases" class="headerlink" title="update releases"></a>update releases</h2><p>因为官网的<code>releases</code>与<code>github</code>上的<code>releases</code>是不完全一直的，因此需要先<code>update releases</code>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">OTP_GITHUB_URL="https://gitee.com/mirrors/erlang" KERL_BUILD_BACKEND=git kerl update releases</span><br></pre></td></tr></table></figure>
+
+<p>执行成功之后会打印版本号列表出来，细心的同学可能会发现想对官网的列表来说，git上的列表会丰富很多。</p>
+<h2 id="build"><a href="#build" class="headerlink" title="build"></a>build</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">OTP_GITHUB_URL="https://gitee.com/mirrors/erlang/repository" KERL_BUILD_BACKEND=git kerl build 19.3.6.13 19.3.6.13</span><br><span class="line">Downloading OTP-19.3.6.13.tar.gz to /home/pwf/.kerl/archives</span><br><span class="line"><span class="meta">  %</span><span class="bash"> Total    % Received % Xferd  Average Speed   Time    Time     Time  Current</span></span><br><span class="line">                                 Dload  Upload   Total   Spent    Left  Speed</span><br><span class="line">100 32.4M    0 32.4M    0     0   779k      0 --:--:--  0:00:42 --:--:-- 2157k</span><br><span class="line">Extracting source code</span><br><span class="line">Building Erlang/OTP 19.3.6.13 (19.3.6.13), please wait...</span><br><span class="line">WARNING: It appears that a required development package 'libssl-dev' is not installed.</span><br><span class="line">APPLICATIONS DISABLED (See: /home/pwf/.kerl/builds/19.3.6.13/otp_build_19.3.6.13.log)</span><br><span class="line"> * jinterface     : No Java compiler found</span><br><span class="line"></span><br><span class="line">DOCUMENTATION INFORMATION (See: /home/pwf/.kerl/builds/19.3.6.13/otp_build_19.3.6.13.log)</span><br><span class="line"> * documentation  : </span><br><span class="line"> *                  xsltproc is missing.</span><br><span class="line"> *                  fop is missing.</span><br><span class="line"> *                  xmllint is missing.</span><br><span class="line"> *                  The documentation can not be built.</span><br><span class="line"></span><br><span class="line">Erlang/OTP 19.3.6.13 (19.3.6.13) has been successfully built</span><br></pre></td></tr></table></figure>
+
+<p>可行！！！</p>
+<p>需要注意一点，因为<code>gitee</code>的包下载路径默认增加了一个<code>repository</code>目录路径，所以<code>update release</code>与<code>build</code>时指定的<code>OTP_GITHUB_URL</code>值是不一样的：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">OTP_GITHUB_URL="https://gitee.com/mirrors/erlang" KERL_BUILD_BACKEND=git kerl update releases</span><br><span class="line">OTP_GITHUB_URL="https://gitee.com/mirrors/erlang/repository" KERL_BUILD_BACKEND=git kerl build 19.3.6.13</span><br></pre></td></tr></table></figure>
+
+<h2 id="install"><a href="#install" class="headerlink" title="install"></a>install</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">kerl install 19.3.6.13 ~/kerl/19.3.6.13</span><br><span class="line">Installing Erlang/OTP 19.3.6.13 (19.3.6.13) in /home/pwf/kerl/19.3.6.13...</span><br><span class="line">You can activate this installation running the following command:</span><br><span class="line">. /home/pwf/kerl/19.3.6.13/activate</span><br><span class="line">Later on, you can leave the installation typing:</span><br><span class="line">kerl_deactivate</span><br></pre></td></tr></table></figure>
+
+<p>再在<code>~/.bashrc</code>增加一个<code>alias</code>:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">alias erl19='. /home/pwf/kerl/19.3.6.13/activate &amp;&amp; kerl active'</span><br></pre></td></tr></table></figure>
+
+<p>然后运行<code>erl19</code>，就可以用19版本的<code>erlang</code>了。</p>
+<h2 id="脚本"><a href="#脚本" class="headerlink" title="脚本"></a>脚本</h2><p>最后放个快速使用的脚本,</p>
+<p>用法跟<code>kerl</code>一样,只是不用自己去设置环境变量了, <code>gitee_kel.sh</code>:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/usr/bin/env bash</span></span><br><span class="line"></span><br><span class="line">export KERL_BUILD_BACKEND=git</span><br><span class="line"></span><br><span class="line">case $1 in</span><br><span class="line">build)</span><br><span class="line">  export OTP_GITHUB_URL="https://gitee.com/mirrors/erlang/repository"</span><br><span class="line">  ;;</span><br><span class="line">*)</span><br><span class="line">  export OTP_GITHUB_URL="https://gitee.com/mirrors/erlang"</span><br><span class="line">  ;;</span><br><span class="line">esac</span><br><span class="line"></span><br><span class="line">kerl $@</span><br></pre></td></tr></table></figure>
+
+<p>完成！！！</p>
+<h2 id="参考连接"><a href="#参考连接" class="headerlink" title="参考连接"></a>参考连接</h2><ul>
+<li><a href="https://github.com/kerl/kerl" target="_blank" rel="noopener">kerl</a></li>
+<li><a href="https://tried.cc/ErlangInstall/" target="_blank" rel="noopener">Erlang/OTP安装指南</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>梦想基金</div>
+  <button onclick="document.getElementById('post-reward').classList.toggle('active');">
+    赞赏
+  </button>
+  <div id="post-reward">
+      
+      <div>
+        <img src="/images/wechatpay.png" alt="feng19 微信">
+        <p>微信</p>
+      </div>
+      
+      <div>
+        <img src="/images/alipay.png" alt="feng19 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/erlang/" rel="tag"># erlang</a>
+              <a href="/tags/kerl/" rel="tag"># kerl</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/08/wechat_for_elixir_usage/" rel="prev" title="Elixir 微信(WeChat) SDK 使用指南">
+      <i class="fa fa-chevron-left"></i> Elixir 微信(WeChat) SDK 使用指南
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/08/08/Erlang-%E8%B0%83%E4%BC%98%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/" rel="next" title="Erlang 调优学习总结">
+      Erlang 调优学习总结 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="http://www.beian.miit.gov.cn/" rel="noopener" target="_blank">粤ICP备20060017号 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">feng19</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"VDj7hFAA8eL6I5UmENlytJhh-gzGzoHsz","app_key":"AOi8dJU8VtxgAuyaPcplC9lP","server_url":null,"security":true};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://feng19.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "https://feng19.com/2019/08/22/%E5%88%A9%E7%94%A8%E7%A0%81%E4%BA%91%E9%95%9C%E5%83%8F%E5%8A%A0%E9%80%9Fkerl/";
+    this.page.identifier = "2019/08/22/利用码云镜像加速kerl/";
+    this.page.title = "利用码云镜像加速kerl";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://feng19.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>

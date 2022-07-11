@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"feng19.com","root":"/","scheme":"Mist","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="前言持续集成介绍我比较懒,这里我就不介绍了,直接贴连接:持续集成是什么？">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Erlang 发布持续集成流程-1">
+<meta property="og:url" content="https://feng19.com/2017/10/14/Erlang%20%E5%8F%91%E5%B8%83%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E6%B5%81%E7%A8%8B-1/">
+<meta property="og:site_name" content="在路上">
+<meta property="og:description" content="前言持续集成介绍我比较懒,这里我就不介绍了,直接贴连接:持续集成是什么？">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2017-10-14T08:30:00.000Z">
+<meta property="article:modified_time" content="2022-07-11T09:50:31.877Z">
+<meta property="article:author" content="feng19">
+<meta property="article:tag" content="erlang">
+<meta property="article:tag" content="release upgrade">
+<meta property="article:tag" content="CI">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://feng19.com/2017/10/14/Erlang%20%E5%8F%91%E5%B8%83%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E6%B5%81%E7%A8%8B-1/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Erlang 发布持续集成流程-1 | 在路上</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?8f25ec0a3f57bade10cde5125c9425d2";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="在路上" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line toggle-line-first"></span>
+        <span class="toggle-line toggle-line-middle"></span>
+        <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">在路上</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">On the road!</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#持续集成介绍"><span class="nav-number">1.1.</span> <span class="nav-text">持续集成介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#流程"><span class="nav-number">1.2.</span> <span class="nav-text">流程</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#DEV环境"><span class="nav-number">2.</span> <span class="nav-text">DEV环境</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#大致步骤"><span class="nav-number">2.1.</span> <span class="nav-text">大致步骤</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#具体流程图"><span class="nav-number">2.2.</span> <span class="nav-text">具体流程图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实现"><span class="nav-number">2.3.</span> <span class="nav-text">实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建项目"><span class="nav-number">2.3.1.</span> <span class="nav-text">创建项目</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Makefile"><span class="nav-number">2.3.2.</span> <span class="nav-text">Makefile</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#rebar-config"><span class="nav-number">2.3.3.</span> <span class="nav-text">rebar.config</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#rebar-config-script"><span class="nav-number">2.3.4.</span> <span class="nav-text">rebar.config.script</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gitlab-ci-yml"><span class="nav-number">2.3.5.</span> <span class="nav-text">.gitlab.ci.yml</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ci-deploy-sh"><span class="nav-number">2.3.6.</span> <span class="nav-text">ci_deploy.sh</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ssh-get-vsn-sh"><span class="nav-number">2.3.7.</span> <span class="nav-text">ssh_get_vsn.sh</span></a></li></ol></li></ol></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="feng19"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">feng19</p>
+  <div class="site-description" itemprop="description">程序路上 成长路上 梦想路上</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/feng19" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;feng19" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:feng_19@foxmail.com" title="E-Mail → mailto:feng_19@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://feng19.com/2017/10/14/Erlang%20%E5%8F%91%E5%B8%83%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E6%B5%81%E7%A8%8B-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="feng19">
+      <meta itemprop="description" content="程序路上 成长路上 梦想路上">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="在路上">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Erlang 发布持续集成流程-1
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-14 16:30:00" itemprop="dateCreated datePublished" datetime="2017-10-14T16:30:00+08:00">2017-10-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 17:50:31" itemprop="dateModified" datetime="2022-07-11T17:50:31+08:00">2022-07-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Erlang-Release-CI/" itemprop="url" rel="index"><span itemprop="name">Erlang-Release-CI</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2017/10/14/Erlang%20%E5%8F%91%E5%B8%83%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E6%B5%81%E7%A8%8B-1/" class="post-meta-item leancloud_visitors" data-flag-title="Erlang 发布持续集成流程-1" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2017/10/14/Erlang%20%E5%8F%91%E5%B8%83%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E6%B5%81%E7%A8%8B-1/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/10/14/Erlang 发布持续集成流程-1/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><h2 id="持续集成介绍"><a href="#持续集成介绍" class="headerlink" title="持续集成介绍"></a>持续集成介绍</h2><p>我比较懒,这里我就不介绍了,直接贴连接:<a href="http://www.ruanyifeng.com/blog/2015/09/continuous-integration.html" target="_blank" rel="noopener">持续集成是什么？</a></p>
+<a id="more"></a>
+
+<h2 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h2><p>公司的发布流程分为四个阶段:<code>DEV-&gt;SIT-&gt;UAT-&gt;PROD</code> ,这也代表着,我们的持续集成(<code>CI</code>)也分同样的四个阶段.</p>
+<p><code>DEV</code>和<code>SIT</code>都是在内网,可以通过<code>ssh</code>直连,但是<code>UAT</code>和<code>PROD</code>在外网,开发不能直接更新,只能通过丢<code>relup</code>的<code>release</code>包给到运维那边去处理</p>
+<p>因此现在如果要做<code>CI</code>的话,前两个环境通过<code>ssh</code>直接操作,后两个只能是打包了</p>
+<p>公司用的是<code>gitlab</code>的<code>CI</code>,所以下面我们来看看如何用<code>gitlab</code>的<code>CI</code>去完成<code>erlang</code>发布应用的持续集成.</p>
+<h1 id="DEV环境"><a href="#DEV环境" class="headerlink" title="DEV环境"></a>DEV环境</h1><h2 id="大致步骤"><a href="#大致步骤" class="headerlink" title="大致步骤"></a>大致步骤</h2><ul>
+<li>编译阶段,通过则进入下一步,不通过发送通知</li>
+<li>测试阶段,通过则进入下一步,不通过发送通知</li>
+<li>部署阶段,不通过发送通知<ol>
+<li>获取当前版本号备用</li>
+<li>如果存在OLD_VSN的环境变量,跳到5, 否则下一步</li>
+<li>通过ssh获取目标机器运行中的版本号</li>
+<li>判断从ssh获取到的内容,如果是机器没有运行,则直接打包发布,否知下一步</li>
+<li>对比当前版本和旧版本,相同则不需要升级和发布然后退出,不相同则下一步</li>
+<li>通过代码生成relup发布包,然后ssh到目标机器升级版本</li>
+</ol>
+</li>
+</ul>
+<h2 id="具体流程图"><a href="#具体流程图" class="headerlink" title="具体流程图"></a>具体流程图</h2><pre class="mermaid" style="text-align: center;">
+
+graph TD
+    start[开始] --> build_stage{编译阶段}
+    notice[告知执行失败,异常结束]
+    build_stage -->|成功| test_stage{测试阶段}
+    build_stage -->|失败| notice
+    test_stage -->|成功| deploy_stage(部署阶段)
+    test_stage -->|失败| notice
+    deploy_stage --> get_new_vsn[获取当前版本号备用]
+    get_new_vsn --> is_env{存在OLD_VSN的环境变量}
+    is_same_vsn{当前版本号和旧版本号相同}
+    is_env -->|存在| is_same_vsn
+    is_env -->|不存在| is_running{获取目标机器运行中的版本号}
+    stop[结束]
+    is_running -->|拿到版本号| is_same_vsn
+    is_running -->|机器没有运行| release_tar_send_run[打包后发送到机器上直接启动]
+    is_same_vsn -->|相同| stop
+    is_same_vsn -->|不同| relup_tar[打包relup发布包发送到目标机器并升级版本]
+    relup_tar --> stop
+</pre>
+
+<blockquote>
+<p>note:上面这个流程图只是<code>DEV</code>,其他环境的会有不同,之后会说到</p>
+</blockquote>
+<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><h3 id="创建项目"><a href="#创建项目" class="headerlink" title="创建项目"></a>创建项目</h3><p><code>rebar3 new app urf</code>, urf=upgrade release flow</p>
+<h3 id="Makefile"><a href="#Makefile" class="headerlink" title="Makefile"></a>Makefile</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br></pre></td><td class="code"><pre><span class="line">APP_NAME &#x3D; urf</span><br><span class="line">all: compile test</span><br><span class="line">APP_VER&#x3D;$(shell awk &#39;&#x2F;release_vsn&#x2F;&#123; print $$1 &#125;&#39; rebar.config | tr -d \&quot;)</span><br><span class="line"></span><br><span class="line">###&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">### build</span><br><span class="line">###&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">.PHONY: get-deps co compile run rel_tar</span><br><span class="line"></span><br><span class="line">get-deps:</span><br><span class="line">    rebar3 get-deps</span><br><span class="line"></span><br><span class="line">co:compile</span><br><span class="line">compile: get-deps</span><br><span class="line">    rebar3 compile</span><br><span class="line"></span><br><span class="line">### clean</span><br><span class="line">.PHONY: clean distclean</span><br><span class="line">clean:</span><br><span class="line">    rebar3 clean</span><br><span class="line"></span><br><span class="line">distclean: test_clean</span><br><span class="line">    rebar3 clean -a</span><br><span class="line"></span><br><span class="line">rel_tar:</span><br><span class="line">    rebar3 tar</span><br><span class="line"></span><br><span class="line">###&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">### test</span><br><span class="line">###&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">.PHONY: test eunit ct test_shell test_run test_clean</span><br><span class="line"></span><br><span class="line">test: epmd</span><br><span class="line">    rebar3 do eunit -v, ct -v, cover -v</span><br><span class="line"></span><br><span class="line">eunit: epmd</span><br><span class="line">    rebar3 do eunit -v, cover</span><br><span class="line"></span><br><span class="line">ct: epmd</span><br><span class="line">    rebar3 do ct -v, cover</span><br><span class="line"></span><br><span class="line">test_shell:</span><br><span class="line">    rebar3 as test compile</span><br><span class="line">    erl -pa _build&#x2F;test&#x2F;lib&#x2F;*&#x2F;ebin -pa _build&#x2F;test&#x2F;lib&#x2F;$(APP_NAME)&#x2F;test</span><br><span class="line"></span><br><span class="line">test_run: epmd</span><br><span class="line">    rebar3 as test shell</span><br><span class="line"></span><br><span class="line">test_clean:</span><br><span class="line">    @rm -rf _build&#x2F;test&#x2F;lib&#x2F;$(APP_NAME)&#x2F;test _build&#x2F;test&#x2F;logs _build&#x2F;test&#x2F;cover</span><br><span class="line"></span><br><span class="line">###&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">### relup</span><br><span class="line">###&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">.PHONY: tag up_vsn up_app_vsn up_relx_vsn clean_appup build_old_vsn relup check_appup</span><br><span class="line"></span><br><span class="line">tag:</span><br><span class="line">    git tag $(APP_VER)</span><br><span class="line"></span><br><span class="line">up_vsn: up_app_vsn up_relx_vsn</span><br><span class="line">up_app_vsn:</span><br><span class="line">    @exec script&#x2F;up_app_vsn.sh</span><br><span class="line">up_relx_vsn:</span><br><span class="line">    @exec script&#x2F;up_relx_vsn.sh</span><br><span class="line"></span><br><span class="line">clean_appup:</span><br><span class="line">    rebar3 appup clean</span><br><span class="line">    rm -f _build&#x2F;default&#x2F;lib&#x2F;*&#x2F;ebin&#x2F;*.appup</span><br><span class="line"></span><br><span class="line">build_old_vsn:</span><br><span class="line">    @exec script&#x2F;build_old_vsn.sh</span><br><span class="line"></span><br><span class="line">relup:</span><br><span class="line">    @exec script&#x2F;relup.sh</span><br><span class="line"></span><br><span class="line">check_appup:</span><br><span class="line">    @exec script&#x2F;check_appup.sh</span><br><span class="line"></span><br><span class="line">###&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">### other</span><br><span class="line">###&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">.PHONY: help tree logtail epmd</span><br><span class="line"></span><br><span class="line">help:</span><br><span class="line">    rebar3 help</span><br><span class="line"></span><br><span class="line">tree:</span><br><span class="line">    rebar3 tree</span><br><span class="line"></span><br><span class="line">epmd:</span><br><span class="line">    @pgrep epmd 2&gt; &#x2F;dev&#x2F;null &gt; &#x2F;dev&#x2F;null || epmd -daemon || true</span><br></pre></td></tr></table></figure>
+
+<p>上面部分除了比较常见的build &amp; test 部分外还增加了relup的一些命令</p>
+<ul>
+<li>tag: 给当前版本打tag</li>
+<li>up_app_vsn: 修改<code>src/*.app.src</code>文件的版本号,最后一位+1</li>
+<li>up_relx_vsn: 修改<code>rebar.config</code>文件的版本号,最后一位+1</li>
+<li>up_vsn: up_app_vsn + up_relx_vsn</li>
+<li>clean_appup: 清理appup文件,打包relup文件前必须清理一次,不然appup插件检测到应用已经存在appup文件就不会再生成新的了</li>
+<li>build_old_vsn: 打包旧的版本,下面会放出脚本文件</li>
+<li>relup: 打包relup版本,下面会放出脚本文件</li>
+<li>check_appup: 打印所有应用下的appup文件</li>
+</ul>
+<h3 id="rebar-config"><a href="#rebar-config" class="headerlink" title="rebar.config"></a>rebar.config</h3><figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">&#123;erl_opts, [</span><br><span class="line">    encrypt_debug_info</span><br><span class="line">]&#125;.</span><br><span class="line"></span><br><span class="line">&#123;plugins, [</span><br><span class="line">    &#123;rebar3_appup_plugin, <span class="string">"2.2.1"</span>&#125;</span><br><span class="line">]&#125;.</span><br><span class="line">&#123;deps, []&#125;.</span><br><span class="line"></span><br><span class="line"><span class="comment">%% for test</span></span><br><span class="line">&#123;cover_enabled, true&#125;.</span><br><span class="line">&#123;cover_print_enabled, true&#125;.</span><br><span class="line">&#123;eunit_opts, [</span><br><span class="line">    &#123;dir, [<span class="string">"test/eunit"</span>]&#125;</span><br><span class="line">]&#125;.</span><br><span class="line">&#123;ct_opts, [</span><br><span class="line">    &#123;dir, [<span class="string">"test/ct"</span>]&#125;,</span><br><span class="line">    &#123;readable, true&#125;</span><br><span class="line">]&#125;.</span><br><span class="line"></span><br><span class="line"><span class="comment">%% for make release</span></span><br><span class="line">&#123;relx, [</span><br><span class="line">    &#123;include_erts, true&#125;,</span><br><span class="line">    &#123;system_libs, true&#125;,</span><br><span class="line">    &#123;dev_mode, false&#125;,</span><br><span class="line">    &#123;extended_start_script, true&#125;,</span><br><span class="line"></span><br><span class="line">    &#123;sys_config, <span class="string">"config/sys.config"</span>&#125;,</span><br><span class="line">    &#123;vm_args, <span class="string">"config/vm.args"</span>&#125;,</span><br><span class="line"></span><br><span class="line">    &#123;release, &#123;urf,</span><br><span class="line">        <span class="string">"0.1.0"</span> <span class="comment">%% release_vsn</span></span><br><span class="line">    &#125;, [urf]&#125;</span><br><span class="line">]&#125;.</span><br></pre></td></tr></table></figure>
+
+<p>首先,应用发布升级,当然少不了增加appup插件:</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;plugins, [</span><br><span class="line">    &#123;rebar3_appup_plugin, <span class="string">"2.2.1"</span>&#125;</span><br><span class="line">]&#125;.</span><br></pre></td></tr></table></figure>
+
+<p>其次是增加编译保护:</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;erl_opts, [</span><br><span class="line">    encrypt_debug_info</span><br><span class="line">]&#125;.</span><br></pre></td></tr></table></figure>
+
+<p>增加这个<code>encrypt_debug_info</code>的主要原因是因为我们编译的代码必须要带有debug_info,不然appup插件会报错,但是同时增加了debug_info之后编译出来的beam文件是可以被反编译的,所以需要增加保护,另外增加了这个只是保护了当前这个app,但是依赖的其他app并不会有保护,后面我们会讲到使用<code>rebar.config.script</code>文件来将deps的其他app也保护起来.</p>
+<p>增加了上面这个保护还需要在项目根目录下增加一个<code>.erlang.crypt</code>文件,内容类似如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[&#123;debug_info, des3_cbc, [], &quot;12345678912345678912345678912345&quot;&#125;].</span><br></pre></td></tr></table></figure>
+
+<p>最后是增加relx:</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&#123;relx, [</span><br><span class="line">    &#123;include_erts, true&#125;,</span><br><span class="line">    &#123;system_libs, true&#125;,</span><br><span class="line">    &#123;dev_mode, false&#125;,</span><br><span class="line">    &#123;extended_start_script, true&#125;,</span><br><span class="line"></span><br><span class="line">    &#123;sys_config, <span class="string">"config/sys.config"</span>&#125;,</span><br><span class="line">    &#123;vm_args, <span class="string">"config/vm.args"</span>&#125;,</span><br><span class="line"></span><br><span class="line">    &#123;release, &#123;urf,</span><br><span class="line">        <span class="string">"0.1.0"</span> <span class="comment">%% release_vsn</span></span><br><span class="line">    &#125;, [urf]&#125;</span><br><span class="line">]&#125;.</span><br></pre></td></tr></table></figure>
+
+<p>可以看到版本好附近有一个注释<code>release_vsn</code>,这个注释的主要作用标记版本号,脚本会通过这个标记找到版本号</p>
+<h3 id="rebar-config-script"><a href="#rebar-config-script" class="headerlink" title="rebar.config.script"></a>rebar.config.script</h3><figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">%%main(CONFIG) -&gt;</span></span><br><span class="line">    CONFIG_1 =</span><br><span class="line">        <span class="keyword">case</span> lists:keyfind(add_overrides, <span class="number">1</span>, CONFIG) <span class="keyword">of</span></span><br><span class="line">            <span class="literal">false</span> -&gt; CONFIG;</span><br><span class="line">            &#123;_, AddOverrides&#125; -&gt;</span><br><span class="line">                Overrides = lists:concat([[&#123;add, App, AddOverride&#125; || App &lt;- Apps] || &#123;Apps, AddOverride&#125; &lt;- AddOverrides]),</span><br><span class="line">                OldOverrides = proplists:get_value(overrides, CONFIG, []),</span><br><span class="line">                lists:keystore(overrides, <span class="number">1</span>, CONFIG, &#123;overrides, Overrides ++ OldOverrides&#125;)</span><br><span class="line">        <span class="keyword">end</span>,</span><br><span class="line"></span><br><span class="line">    IsCI = os:getenv(<span class="string">"CI_COMMIT_SHA"</span>) =/= <span class="literal">false</span>,</span><br><span class="line">    IsRelup = os:getenv(<span class="string">"RELUP_TAR"</span>) =/= <span class="literal">false</span>,</span><br><span class="line"></span><br><span class="line">    ChangeProfileFun =</span><br><span class="line">        <span class="keyword">fun</span>(test, ProfileConfig0) -&gt; &#123;test, ProfileConfig0&#125;;</span><br><span class="line">            (ProfileName, ProfileConfig0) -&gt;</span><br><span class="line">                ProfileConfig1 = maps:from_list(ProfileConfig0),</span><br><span class="line">                Relx0 = maps:get(relx, ProfileConfig1, []),</span><br><span class="line">                Relx2 =</span><br><span class="line">                    <span class="keyword">case</span> IsCI <span class="keyword">of</span></span><br><span class="line">                        <span class="literal">false</span> -&gt; Relx0;</span><br><span class="line">                        _ -&gt;</span><br><span class="line">                            Relx1 = lists:keystore(include_erts, <span class="number">1</span>, Relx0, &#123;include_erts, true&#125;),</span><br><span class="line">                            lists:keystore(system_libs, <span class="number">1</span>, Relx1, &#123;system_libs, true&#125;)</span><br><span class="line">                    <span class="keyword">end</span>,</span><br><span class="line">                Relx =</span><br><span class="line">                    <span class="keyword">case</span> IsRelup <span class="keyword">of</span></span><br><span class="line">                        <span class="literal">false</span> -&gt; Relx2;</span><br><span class="line">                        _ -&gt;</span><br><span class="line">                            Relx3 = lists:keystore(include_erts, <span class="number">1</span>, Relx2, &#123;include_erts, false&#125;),</span><br><span class="line">                            lists:keystore(system_libs, <span class="number">1</span>, Relx3, &#123;system_libs, false&#125;)</span><br><span class="line">                    <span class="keyword">end</span>,</span><br><span class="line">                ProfileConfig = maps:to_list(ProfileConfig1#&#123;relx =&gt; Relx&#125;),</span><br><span class="line">                &#123;ProfileName, ProfileConfig&#125;</span><br><span class="line">        <span class="keyword">end</span>,</span><br><span class="line"></span><br><span class="line">    Profiles0 = proplists:get_value(profiles, CONFIG_1, []),</span><br><span class="line">    Profiles = [ChangeProfileFun(RebarProfile, ProfileConfig) ||</span><br><span class="line">        &#123;RebarProfile, ProfileConfig&#125; &lt;- Profiles0],</span><br><span class="line">    CONFIG_2 = lists:keystore(profiles, <span class="number">1</span>, CONFIG_1, &#123;profiles, Profiles&#125;),</span><br><span class="line">    &#123;_, CONFIG_3&#125; = ChangeProfileFun(none, CONFIG_2),</span><br><span class="line"></span><br><span class="line">    LAST_CONFIG =</span><br><span class="line">        <span class="keyword">case</span> IsCI <span class="keyword">of</span></span><br><span class="line">            <span class="literal">false</span> -&gt; CONFIG_3;</span><br><span class="line">            _ -&gt;</span><br><span class="line">                lists:keystore(global_rebar_dir, <span class="number">1</span>, CONFIG_3, &#123;global_rebar_dir, <span class="string">"_build/rebar3"</span>&#125;)</span><br><span class="line">        <span class="keyword">end</span>,</span><br><span class="line"><span class="comment">%%    io:format("~n~p~n", [LAST_CONFIG]),</span></span><br><span class="line">    LAST_CONFIG.</span><br></pre></td></tr></table></figure>
+
+<p><code>rebar.config.script</code>不熟悉的同学我这里简单介绍一下:</p>
+<ul>
+<li><p>作用:</p>
+<p>通过执行erlang脚本动态的修改<code>rebar.config</code>的内容</p>
+</li>
+<li><p>运行原理</p>
+<p>在运行<code>rebar3</code>相关的命令之后,<code>rebar3</code>首先会读取<code>rebar.config</code>,然后将所有内容复制给<code>CONFIG</code>这个变量,然后再执行<code>rebar.config.script</code>这个文件,运行结束之后的结果就是最终的rebar的配置了</p>
+</li>
+</ul>
+<p>然后再来说说上面的代码:</p>
+<ul>
+<li><p>add_overrides主要是为了给deps的其他app加上保护,用法如下:</p>
+<p>增加到<code>rebar.config</code>文件里:</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;add_overrides, [</span><br><span class="line">    &#123;[app1,app2,app3,...], [&#123;erl_opts, [encrypt_debug_info]&#125;]&#125;</span><br><span class="line">]&#125;.</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>第二部分是根据环境变量来判断是否在ci环境和是否保护<code>RELUP_TAR</code>里</p>
+<ul>
+<li>一般不变更otp的版本和依赖不增加系统库的前提下,我们打包relup的包是不需要再包含<code>erts</code>和系统库,这样可以大大减少打包之后文件的大小, 因此我们在打包relup的时候,会在<code>export</code>变量 <code>RELUP_TAR</code> 到环境变量,这样只要在脚本里判断如果有这个变量则设置<code>include_erts</code>和<code>system_libs</code>为false.</li>
+<li>另外一般我们的开发机器是ubuntu,但是线上的环境是centos,所以我们本地编译线上的包的时候会制定centos版的erlang的位置,幸运的是,我们的ci的<code>runner</code>的环境也是centos,因此我们如果判断到是在ci环境里时,只要设置成true就行了.</li>
+</ul>
+</li>
+<li><p>在ci环境,我们会使用cache,但是gitlab的ci的cache只会保存项目下的文件,因此像一些保存在<code>~/.cache/rebar3</code>下的hex包就不会被保存,这样我们每次编译的时候都要去拉一遍hex的pkg,幸好,rebar3可以修改这些文件的位置,只要我们设置<code>global_rebar_dir</code>的位置为项目下的<code>_build/rebar3</code>,之后我们再设置cache保存这个文件夹就完美解决这个问题了.</p>
+</li>
+</ul>
+<blockquote>
+<p>ps:可以看到第一行有一句注释,这句注释并不是必须的,其实它主要左右是我在idea里修改这个文件的时候,会打开这个注释,然后这个文件就变成了一个方法了,所有修改的时候格式也不会变化,同时也可以方便的用idea的格式化功能,算是一个小技巧,不过最后记得用完重新注释第一行,不然rebar3运行的时候会报错</p>
+</blockquote>
+<h3 id="gitlab-ci-yml"><a href="#gitlab-ci-yml" class="headerlink" title=".gitlab.ci.yml"></a>.gitlab.ci.yml</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">image:</span> <span class="string">cerl</span></span><br><span class="line"></span><br><span class="line"><span class="attr">before_script:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">eval</span> <span class="string">$(ssh-agent</span> <span class="string">-s)</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">ssh-add</span> <span class="string">&lt;(echo</span> <span class="string">"$SSH_PRIVATE_KEY"</span><span class="string">)</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">mkdir</span> <span class="string">-p</span> <span class="string">~/.ssh</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">echo</span> <span class="string">-e</span> <span class="string">"Host *\n\tStrictHostKeyChecking no\n\n"</span> <span class="string">&gt;</span> <span class="string">~/.ssh/config</span></span><br><span class="line"></span><br><span class="line"><span class="attr">after_script:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">rm</span> <span class="string">-rf</span> <span class="string">_build/default/lib/urf</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">rm</span> <span class="string">-rf</span> <span class="string">~/.git-credentials</span></span><br><span class="line"></span><br><span class="line"><span class="attr">stages:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">build</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">test</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">deploy</span></span><br><span class="line"></span><br><span class="line"><span class="attr">cache:</span></span><br><span class="line">  <span class="attr">paths:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">_build/default</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">_build/rebar3</span></span><br><span class="line"></span><br><span class="line"><span class="attr">build:</span></span><br><span class="line">  <span class="attr">stage:</span> <span class="string">build</span></span><br><span class="line">  <span class="attr">except:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">tags</span></span><br><span class="line">  <span class="attr">script:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">make</span> <span class="string">compile</span> <span class="string">||</span> <span class="string">./script/ci_notice.sh</span> <span class="string">"Build Fail"</span></span><br><span class="line">  <span class="attr">tags:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">dockers</span></span><br><span class="line"></span><br><span class="line"><span class="attr">test:</span></span><br><span class="line">  <span class="attr">stage:</span> <span class="string">test</span></span><br><span class="line">  <span class="attr">coverage:</span> <span class="string">'/\|\s*total\s*\|\s*(\d+)%\s*\|/'</span></span><br><span class="line">  <span class="attr">except:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">tags</span></span><br><span class="line">  <span class="attr">script:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">make</span> <span class="string">test</span> <span class="string">||</span> <span class="string">./script/ci_notice.sh</span> <span class="string">"Test Fail"</span></span><br><span class="line">  <span class="attr">tags:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">dockers</span></span><br><span class="line"></span><br><span class="line"><span class="attr">deploy_dev:</span></span><br><span class="line">  <span class="attr">stage:</span> <span class="string">deploy</span></span><br><span class="line">  <span class="attr">only:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">/^d_dev$/</span></span><br><span class="line">  <span class="attr">except:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">tags</span></span><br><span class="line">  <span class="attr">script:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">./script/ci_deploy.sh</span> <span class="string">||</span> <span class="string">./script/ci_notice.sh</span> <span class="string">"Deploy Fail"</span></span><br><span class="line">  <span class="attr">environment:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">dev</span></span><br><span class="line">  <span class="attr">variables:</span></span><br><span class="line">    <span class="attr">SSH_USER_HOST:</span> <span class="string">"user@server"</span></span><br><span class="line">    <span class="attr">SERVER:</span> <span class="string">"dev"</span></span><br><span class="line">  <span class="attr">tags:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">dockers</span></span><br></pre></td></tr></table></figure>
+
+<p>对于<code>gitlab</code> 的 <code>CI</code> 不是很熟悉的同学可以看一下官方文档,文档里会给你很详尽的说明,同时也建议大家先系统性的学习一遍<code>.gitlab.ci.yml</code>文档的配置再回来看这篇文章.</p>
+<p>之前说到过我们有三个阶段:</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">stages:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">build</span> <span class="comment"># 编译阶段</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">test</span> <span class="comment"># 测试阶段</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">deploy</span> <span class="comment"># 部署阶段</span></span><br></pre></td></tr></table></figure>
+
+<p>cache这一部分,ci有cache会大大减少整个流程的执行时间,这里cache了两个文件夹<code>default</code>和<code>rebar3</code>文件夹就够了</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">cache:</span></span><br><span class="line">  <span class="attr">paths:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">_build/default</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">_build/rebar3</span></span><br></pre></td></tr></table></figure>
+
+<p>build和test两个阶段比较简单,build就用<code>make compile</code>, test的话<code>make test</code>,另外如果想看到测试的代码覆盖率的话可以增加<code>coverage</code>,增加之后gitlab的页面那里就能显示这次的代码覆盖率了,其他就不一一详细说明了,主要来看看deploy阶段:</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">deploy_dev:</span></span><br><span class="line">  <span class="attr">stage:</span> <span class="string">deploy</span></span><br><span class="line">  <span class="attr">only:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">/^d_dev$/</span></span><br><span class="line">  <span class="attr">except:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">tags</span></span><br><span class="line">  <span class="attr">script:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">./script/ci_deploy.sh</span> <span class="string">||</span> <span class="string">./script/ci_notice.sh</span> <span class="string">"Deploy Fail"</span></span><br><span class="line">  <span class="attr">environment:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">dev</span></span><br><span class="line">  <span class="attr">variables:</span></span><br><span class="line">    <span class="attr">SSH_USER_HOST:</span> <span class="string">"user@server"</span></span><br><span class="line">    <span class="attr">REBAR_PROFILE:</span> <span class="string">"dev"</span></span><br><span class="line">  <span class="attr">tags:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">dockers</span></span><br></pre></td></tr></table></figure>
+
+<p>这个阶段我们只针对<code>d_dev</code>这个分支,所以如果我们要部署或者升级<code>dev</code>环境,就只需要切换到这个分支然后合并最新的代码,最后推送这个分支到服务器,然后ci会帮你解决一切了,当然还是要通过我们写的脚本<code>ci_deploy.sh</code>来解决.</p>
+<h3 id="ci-deploy-sh"><a href="#ci-deploy-sh" class="headerlink" title="ci_deploy.sh"></a>ci_deploy.sh</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/usr/bin/env bash</span></span><br><span class="line"></span><br><span class="line">case $OSTYPE in</span><br><span class="line">    darwin*) SCRIPT=$(readlink $0 || true);;</span><br><span class="line">    *) SCRIPT=$(readlink -f $0 || true);;</span><br><span class="line">esac</span><br><span class="line">[ -z $SCRIPT ] &amp;&amp; SCRIPT=$0</span><br><span class="line">SCRIPT_DIR="$(cd `dirname "$SCRIPT"` &amp;&amp; pwd -P)"</span><br><span class="line">cd "$SCRIPT_DIR/.."</span><br><span class="line"></span><br><span class="line">if [ -z $SSH_USER_HOST ]</span><br><span class="line">then</span><br><span class="line">    echo "empty SSH_USER_HOST"</span><br><span class="line">    exit 1</span><br><span class="line">fi</span><br><span class="line">if [ -z $SERVER ]</span><br><span class="line">then</span><br><span class="line">    echo "empty SERVER"</span><br><span class="line">    exit 1</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">REL_NAME=$(awk -F '[,&#123;]' '/\&#123;release, \&#123;/&#123; print $4 &#125;' rebar.config)</span><br><span class="line">NEW_VSN=$(awk '/release_vsn/&#123; print $1 &#125;' rebar.config | tr -d \")</span><br><span class="line"></span><br><span class="line">[ -z $TARGET_DIR ] &amp;&amp; TARGET_DIR="/data/$REL_NAME"</span><br><span class="line"></span><br><span class="line">export TARGET_DIR=$TARGET_DIR</span><br><span class="line">export REBAR_PROFILE=$SERVER</span><br><span class="line">TAR_FILE0="$REL_NAME-$NEW_VSN.tar.gz"</span><br><span class="line">TAR_FILE="_build/$REBAR_PROFILE/rel/$REL_NAME/$TAR_FILE0"</span><br><span class="line"></span><br><span class="line">export OLD_VSN=`exec $SCRIPT_DIR/ssh_get_vsn.sh`</span><br><span class="line"></span><br><span class="line">only_send_and_start() &#123;</span><br><span class="line">    echo "rebar3 tar" &amp;&amp; \</span><br><span class="line">    rebar3 tar &amp;&amp; \</span><br><span class="line">    echo "scp $TAR_FILE $SSH_USER_HOST:$TARGET_DIR" &amp;&amp; \</span><br><span class="line">    scp $TAR_FILE $SSH_USER_HOST:$TARGET_DIR &amp;&amp; \</span><br><span class="line">    echo "ssh $SSH_USER_HOST \"cd $TARGET_DIR &amp;&amp; tar zxf $TAR_FILE0 &amp;&amp; rm -f $TAR_FILE0 &amp;&amp; ./bin/$REL_NAME start\"" &amp;&amp; \</span><br><span class="line">    ssh $SSH_USER_HOST "cd $TARGET_DIR &amp;&amp; tar zxf $TAR_FILE0 &amp;&amp; rm -f $TAR_FILE0 &amp;&amp; ./bin/$REL_NAME start" &amp;&amp; \</span><br><span class="line">    echo "run successfully"</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">case $OLD_VSN in</span><br><span class="line">    "miss_file")</span><br><span class="line">        only_send_and_start;;</span><br><span class="line">    "Node is not running!")</span><br><span class="line">        only_send_and_start;;</span><br><span class="line">    $NEW_VSN)</span><br><span class="line">        echo "same vsn : $NEW_VSN";;</span><br><span class="line">    *)</span><br><span class="line">        $SCRIPT_DIR/build_old_vsn.sh &amp;&amp; \</span><br><span class="line">        echo "rebar3 appup clean" &amp;&amp; \</span><br><span class="line">        rebar3 appup clean &amp;&amp; \</span><br><span class="line">        echo "rm -f _build/default/lib/*/ebin/*.appup" &amp;&amp; \</span><br><span class="line">        rm -f _build/default/lib/*/ebin/*.appup &amp;&amp; \</span><br><span class="line">        echo "rebar3 get-deps" &amp;&amp; \</span><br><span class="line">        rebar3 get-deps &amp;&amp; \</span><br><span class="line">        echo "rebar3 release" &amp;&amp; \</span><br><span class="line">        rebar3 release &amp;&amp; \</span><br><span class="line">        echo "rebar3 appup compile" &amp;&amp; \</span><br><span class="line">        rebar3 appup compile &amp;&amp; \</span><br><span class="line">        echo "rebar3 appup generate --previous_version $OLD_VSN" &amp;&amp; \</span><br><span class="line">        rebar3 appup generate --previous_version $OLD_VSN &amp;&amp; \</span><br><span class="line">        echo "rebar3 relup --upfrom $OLD_VSN" &amp;&amp; \</span><br><span class="line">        rebar3 relup --upfrom $OLD_VSN &amp;&amp; \</span><br><span class="line">        echo "rebar3 tar" &amp;&amp; \</span><br><span class="line">        rebar3 tar &amp;&amp; \</span><br><span class="line">        echo "scp $TAR_FILE $SSH_USER_HOST:$TARGET_DIR/releases" &amp;&amp; \</span><br><span class="line">        scp $TAR_FILE $SSH_USER_HOST:$TARGET_DIR/releases &amp;&amp; \</span><br><span class="line">        echo "ssh $SSH_USER_HOST \"cd $TARGET_DIR &amp;&amp; ./bin/$REL_NAME upgrade $NEW_VSN\"" &amp;&amp; \</span><br><span class="line">        ssh $SSH_USER_HOST "cd $TARGET_DIR &amp;&amp; ./bin/$REL_NAME upgrade $NEW_VSN" &amp;&amp; \</span><br><span class="line">        echo "upgrade successfully";;</span><br><span class="line">esac</span><br></pre></td></tr></table></figure>
+
+<h3 id="ssh-get-vsn-sh"><a href="#ssh-get-vsn-sh" class="headerlink" title="ssh_get_vsn.sh"></a>ssh_get_vsn.sh</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/usr/bin/env bash</span></span><br><span class="line"></span><br><span class="line">case $OSTYPE in</span><br><span class="line">    darwin*) SCRIPT=$(readlink $0 || true);;</span><br><span class="line">    *) SCRIPT=$(readlink -f $0 || true);;</span><br><span class="line">esac</span><br><span class="line">[ -z $SCRIPT ] &amp;&amp; SCRIPT=$0</span><br><span class="line">SCRIPT_DIR="$(cd `dirname "$SCRIPT"` &amp;&amp; pwd -P)"</span><br><span class="line">cd "$SCRIPT_DIR/.."</span><br><span class="line"></span><br><span class="line">if [ -z $SSH_USER_HOST ]</span><br><span class="line">then</span><br><span class="line">    echo "empty SSH_USER_HOST"</span><br><span class="line">    exit 1</span><br><span class="line">fi</span><br><span class="line">if [ -z $TARGET_DIR ]</span><br><span class="line">then</span><br><span class="line">    echo "empty TARGET_DIR"</span><br><span class="line">    exit 1</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">REL_NAME=$(awk -F '[,&#123;]' '/\&#123;release, \&#123;/&#123; print $4 &#125;' rebar.config)</span><br><span class="line"></span><br><span class="line">ssh_cmd_get_versions="([ -f $TARGET_DIR/bin/$REL_NAME ] &amp;&amp; cd $TARGET_DIR ; ./bin/$REL_NAME versions | tr -d '\n') || ([ ! -f $TARGET_DIR/bin/$REL_NAME ] &amp;&amp; mkdir -p $TARGET_DIR ; echo miss_file)"</span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="built_in">echo</span> <span class="string">"ssh <span class="variable">$SSH_USER_HOST</span> \"<span class="variable">$&#123;ssh_cmd_get_versions&#125;</span>\""</span></span></span><br><span class="line">versions=`ssh $SSH_USER_HOST "$&#123;ssh_cmd_get_versions&#125;"`</span><br><span class="line"></span><br><span class="line">case $versions in</span><br><span class="line">    "miss_file")</span><br><span class="line">        echo "miss_file";;</span><br><span class="line">    "Node is not running!")</span><br><span class="line">        echo "Node is not running!";;</span><br><span class="line">    *)</span><br><span class="line">        echo $(echo $versions | sed -r "s/.*\*\ ([0-9]+.[0-9]+.[0-9]+)\ permanent.*/\1/g")</span><br><span class="line">esac</span><br></pre></td></tr></table></figure>
+
+<p>上面的这些脚本其实只是之前的流程的转义,我这里就不重复了.</p>
+<hr>
+<p>今天就这样~玩得开心!</p>
+<p>end</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>梦想基金</div>
+  <button onclick="document.getElementById('post-reward').classList.toggle('active');">
+    赞赏
+  </button>
+  <div id="post-reward">
+      
+      <div>
+        <img src="/images/wechatpay.png" alt="feng19 微信">
+        <p>微信</p>
+      </div>
+      
+      <div>
+        <img src="/images/alipay.png" alt="feng19 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/erlang/" rel="tag"># erlang</a>
+              <a href="/tags/release-upgrade/" rel="tag"># release upgrade</a>
+              <a href="/tags/CI/" rel="tag"># CI</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/04/08/erlang-solutions-%E5%9B%BD%E5%86%85%E9%95%9C%E5%83%8F%E5%9C%B0%E5%9D%80/" rel="prev" title="erlang-solutions-国内镜像地址">
+      <i class="fa fa-chevron-left"></i> erlang-solutions-国内镜像地址
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-7%20sys%E6%A8%A1%E5%9D%97/" rel="next" title="Erlang 发布版本升级-7 sys模块">
+      Erlang 发布版本升级-7 sys模块 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="http://www.beian.miit.gov.cn/" rel="noopener" target="_blank">粤ICP备20060017号 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">feng19</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"VDj7hFAA8eL6I5UmENlytJhh-gzGzoHsz","app_key":"AOi8dJU8VtxgAuyaPcplC9lP","server_url":null,"security":true};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://feng19.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "https://feng19.com/2017/10/14/Erlang%20%E5%8F%91%E5%B8%83%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E6%B5%81%E7%A8%8B-1/";
+    this.page.identifier = "2017/10/14/Erlang 发布持续集成流程-1/";
+    this.page.title = "Erlang 发布持续集成流程-1";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://feng19.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>

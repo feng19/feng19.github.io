@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"feng19.com","root":"/","scheme":"Mist","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="程序路上 成长路上 梦想路上">
+<meta property="og:type" content="website">
+<meta property="og:title" content="在路上">
+<meta property="og:url" content="https://feng19.com/page/2/">
+<meta property="og:site_name" content="在路上">
+<meta property="og:description" content="程序路上 成长路上 梦想路上">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:author" content="feng19">
+<meta property="article:tag" content="erlang">
+<meta property="article:tag" content="elixir">
+<meta property="article:tag" content="life">
+<meta property="article:tag" content="dream">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://feng19.com/page/2/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : true,
+    isPost : false,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>在路上</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?8f25ec0a3f57bade10cde5125c9425d2";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="在路上" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line toggle-line-first"></span>
+        <span class="toggle-line toggle-line-middle"></span>
+        <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">在路上</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">On the road!</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-overview-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="feng19"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">feng19</p>
+  <div class="site-description" itemprop="description">程序路上 成长路上 梦想路上</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/feng19" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;feng19" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:feng_19@foxmail.com" title="E-Mail → mailto:feng_19@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content index posts-expand">
+          
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-7%20sys%E6%A8%A1%E5%9D%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="feng19">
+      <meta itemprop="description" content="程序路上 成长路上 梦想路上">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="在路上">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-7%20sys%E6%A8%A1%E5%9D%97/" class="post-title-link" itemprop="url">Erlang 发布版本升级-7 sys模块</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-01 00:00:07" itemprop="dateCreated datePublished" datetime="2017-10-01T00:00:07+08:00">2017-10-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 17:50:31" itemprop="dateModified" datetime="2022-07-11T17:50:31+08:00">2022-07-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Erlang-Release-Upgrade/" itemprop="url" rel="index"><span itemprop="name">Erlang-Release-Upgrade</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-7%20sys%E6%A8%A1%E5%9D%97/" class="post-meta-item leancloud_visitors" data-flag-title="Erlang 发布版本升级-7 sys模块" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-7%20sys%E6%A8%A1%E5%9D%97/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/09/30/Erlang 发布版本升级-7 sys模块/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>《Erlang 发布版本升级》 系列第七篇 - sys模块</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-7%20sys%E6%A8%A1%E5%9D%97/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-6%20%E5%8D%87%E7%BA%A7%E6%A8%A1%E5%9D%97%E4%B8%8E%E8%BF%9B%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="feng19">
+      <meta itemprop="description" content="程序路上 成长路上 梦想路上">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="在路上">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-6%20%E5%8D%87%E7%BA%A7%E6%A8%A1%E5%9D%97%E4%B8%8E%E8%BF%9B%E7%A8%8B/" class="post-title-link" itemprop="url">Erlang 发布版本升级-6 升级模块与进程</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-01 00:00:06" itemprop="dateCreated datePublished" datetime="2017-10-01T00:00:06+08:00">2017-10-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 17:50:31" itemprop="dateModified" datetime="2022-07-11T17:50:31+08:00">2022-07-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Erlang-Release-Upgrade/" itemprop="url" rel="index"><span itemprop="name">Erlang-Release-Upgrade</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-6%20%E5%8D%87%E7%BA%A7%E6%A8%A1%E5%9D%97%E4%B8%8E%E8%BF%9B%E7%A8%8B/" class="post-meta-item leancloud_visitors" data-flag-title="Erlang 发布版本升级-6 升级模块与进程" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-6%20%E5%8D%87%E7%BA%A7%E6%A8%A1%E5%9D%97%E4%B8%8E%E8%BF%9B%E7%A8%8B/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/09/30/Erlang 发布版本升级-6 升级模块与进程/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>《Erlang 发布版本升级》 系列第六篇 - 升级模块与进程</p>
+<p>或许有些同学会很容易搞混,在升级中到底是升级进程还是升级代码模块.</p>
+<p>答案显然是肯定的,升级代码模块,而我们说的升级进程,只是在需要同步升级进程内部状态的时候才需要,而同步更新也是先加载更新新的代码模块,然后再通知进程执行内部状态的转变.</p>
+<p>只是,我们都知道我们appup里面只有提到模块,里面并没有提及到进程,而我们都知道进程的标示pid,都是动态的,而我们在做同步代码热更的时候,是怎么将模块与进程管理起来的呢?下面我带大家从源码中找出答案.</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-6%20%E5%8D%87%E7%BA%A7%E6%A8%A1%E5%9D%97%E4%B8%8E%E8%BF%9B%E7%A8%8B/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-5%20supervisor%E6%9B%B4%E6%96%B0%E8%AF%B4%E6%98%8E/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="feng19">
+      <meta itemprop="description" content="程序路上 成长路上 梦想路上">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="在路上">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-5%20supervisor%E6%9B%B4%E6%96%B0%E8%AF%B4%E6%98%8E/" class="post-title-link" itemprop="url">Erlang 发布版本升级-5 supervisor更新说明</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-01 00:00:05" itemprop="dateCreated datePublished" datetime="2017-10-01T00:00:05+08:00">2017-10-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 17:50:31" itemprop="dateModified" datetime="2022-07-11T17:50:31+08:00">2022-07-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Erlang-Release-Upgrade/" itemprop="url" rel="index"><span itemprop="name">Erlang-Release-Upgrade</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-5%20supervisor%E6%9B%B4%E6%96%B0%E8%AF%B4%E6%98%8E/" class="post-meta-item leancloud_visitors" data-flag-title="Erlang 发布版本升级-5 supervisor更新说明" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-5%20supervisor%E6%9B%B4%E6%96%B0%E8%AF%B4%E6%98%8E/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/09/30/Erlang 发布版本升级-5 supervisor更新说明/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>《Erlang 发布版本升级》 系列第五篇 - supervisor更新说明</p>
+<p>supervisor在我们热更中起到至关重要,而且设计到的内容比较多,需要注意的事项也很多,所以这里特别开了一个章节来说.</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-5%20supervisor%E6%9B%B4%E6%96%B0%E8%AF%B4%E6%98%8E/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-4%20%E5%8D%87%E7%BA%A7%E6%8C%87%E4%BB%A4%E8%AE%B2%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="feng19">
+      <meta itemprop="description" content="程序路上 成长路上 梦想路上">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="在路上">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-4%20%E5%8D%87%E7%BA%A7%E6%8C%87%E4%BB%A4%E8%AE%B2%E8%A7%A3/" class="post-title-link" itemprop="url">Erlang 发布版本升级-4 升级指令讲解</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-01 00:00:04" itemprop="dateCreated datePublished" datetime="2017-10-01T00:00:04+08:00">2017-10-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 17:50:31" itemprop="dateModified" datetime="2022-07-11T17:50:31+08:00">2022-07-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Erlang-Release-Upgrade/" itemprop="url" rel="index"><span itemprop="name">Erlang-Release-Upgrade</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-4%20%E5%8D%87%E7%BA%A7%E6%8C%87%E4%BB%A4%E8%AE%B2%E8%A7%A3/" class="post-meta-item leancloud_visitors" data-flag-title="Erlang 发布版本升级-4 升级指令讲解" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-4%20%E5%8D%87%E7%BA%A7%E6%8C%87%E4%BB%A4%E8%AE%B2%E8%A7%A3/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/09/30/Erlang 发布版本升级-4 升级指令讲解/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>《Erlang 发布版本升级》 系列第四篇 - 升级指令讲解</p>
+<p>插件虽然能帮助我们很方便的生成appup文件,但是如果你想要在升级的时候执行一下你的升级mnesia的record数据结构方法,插件不能分析出来我们要做这个的.</p>
+<p>所以插件只能帮我们做其中一部分工作而已,另外一部分需要我们自己去处理,因此我们也需要对appup里面的指令进行进一步的学习.</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-4%20%E5%8D%87%E7%BA%A7%E6%8C%87%E4%BB%A4%E8%AE%B2%E8%A7%A3/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-3%20%E5%8D%87%E7%BA%A7%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%B7%A5%E5%85%B7%E8%AE%B2%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="feng19">
+      <meta itemprop="description" content="程序路上 成长路上 梦想路上">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="在路上">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-3%20%E5%8D%87%E7%BA%A7%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%B7%A5%E5%85%B7%E8%AE%B2%E8%A7%A3/" class="post-title-link" itemprop="url">Erlang 发布版本升级-3 升级发布版本工具讲解</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-01 00:00:03" itemprop="dateCreated datePublished" datetime="2017-10-01T00:00:03+08:00">2017-10-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 17:50:31" itemprop="dateModified" datetime="2022-07-11T17:50:31+08:00">2022-07-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Erlang-Release-Upgrade/" itemprop="url" rel="index"><span itemprop="name">Erlang-Release-Upgrade</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-3%20%E5%8D%87%E7%BA%A7%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%B7%A5%E5%85%B7%E8%AE%B2%E8%A7%A3/" class="post-meta-item leancloud_visitors" data-flag-title="Erlang 发布版本升级-3 升级发布版本工具讲解" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-3%20%E5%8D%87%E7%BA%A7%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%B7%A5%E5%85%B7%E8%AE%B2%E8%A7%A3/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/09/30/Erlang 发布版本升级-3 升级发布版本工具讲解/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>《Erlang 发布版本升级》 系列第三篇 - 升级发布版本工具讲解</p>
+<p>为了不加班,所以程序员一般都会开发一些便捷的工具来提高开发效率,下面就让我来给大家讲讲升级发布版本工具:<a href="https://github.com/lrascao/rebar3_appup_plugin" target="_blank" rel="noopener">rebar3_appup_plugin</a></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-3%20%E5%8D%87%E7%BA%A7%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%B7%A5%E5%85%B7%E8%AE%B2%E8%A7%A3/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-2%20gen_server%E7%83%AD%E6%9B%B4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="feng19">
+      <meta itemprop="description" content="程序路上 成长路上 梦想路上">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="在路上">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-2%20gen_server%E7%83%AD%E6%9B%B4/" class="post-title-link" itemprop="url">Erlang 发布版本升级-2 gen_server热更</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-01 00:00:02" itemprop="dateCreated datePublished" datetime="2017-10-01T00:00:02+08:00">2017-10-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 17:50:31" itemprop="dateModified" datetime="2022-07-11T17:50:31+08:00">2022-07-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Erlang-Release-Upgrade/" itemprop="url" rel="index"><span itemprop="name">Erlang-Release-Upgrade</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-2%20gen_server%E7%83%AD%E6%9B%B4/" class="post-meta-item leancloud_visitors" data-flag-title="Erlang 发布版本升级-2 gen_server热更" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-2%20gen_server%E7%83%AD%E6%9B%B4/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/09/30/Erlang 发布版本升级-2 gen_server热更/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>《Erlang 发布版本升级》 系列第二篇 - gen_server热更</p>
+<p>OTP的<code>gen_server</code>模块,我想应该是大家在<code>erlang</code>开发中接触最多的模块了,但是我们经常会碰到要修改内部状态(<code>state</code>)的时候,例如原来的<code>state</code>不再适用于新的需求,需要改变<code>state</code>的数据结构,增加或者减少一个字段</p>
+<p>遇到这样情况之后,我想很大一部分同学都会选择关闭这个进程,然后加载新代码,然后再开启这个进程,但是面对运行中的环境,要做这个操作只能重启<code>vm</code>了</p>
+<p>其实我们并不需要重启<code>vm</code>,只需要多动动手指敲多几行代码就能完成这个代码的热更了</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-2%20gen_server%E7%83%AD%E6%9B%B4/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-1%20%E4%BB%A3%E7%A0%81%E7%83%AD%E6%9B%B4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="feng19">
+      <meta itemprop="description" content="程序路上 成长路上 梦想路上">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="在路上">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-1%20%E4%BB%A3%E7%A0%81%E7%83%AD%E6%9B%B4/" class="post-title-link" itemprop="url">Erlang 发布版本升级-1 代码热更简介</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-01 00:00:00" itemprop="dateCreated datePublished" datetime="2017-10-01T00:00:00+08:00">2017-10-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 17:50:31" itemprop="dateModified" datetime="2022-07-11T17:50:31+08:00">2022-07-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Erlang-Release-Upgrade/" itemprop="url" rel="index"><span itemprop="name">Erlang-Release-Upgrade</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-1%20%E4%BB%A3%E7%A0%81%E7%83%AD%E6%9B%B4/" class="post-meta-item leancloud_visitors" data-flag-title="Erlang 发布版本升级-1 代码热更简介" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-1%20%E4%BB%A3%E7%A0%81%E7%83%AD%E6%9B%B4/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/09/30/Erlang 发布版本升级-1 代码热更/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>《Erlang 发布版本升级》 系列第一篇 - 代码热更简介</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-1%20%E4%BB%A3%E7%A0%81%E7%83%AD%E6%9B%B4/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+
+  
+  <nav class="pagination">
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+  </nav>
+
+
+
+        </div>
+        
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="http://www.beian.miit.gov.cn/" rel="noopener" target="_blank">粤ICP备20060017号 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">feng19</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"VDj7hFAA8eL6I5UmENlytJhh-gzGzoHsz","app_key":"AOi8dJU8VtxgAuyaPcplC9lP","server_url":null,"security":true};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://feng19.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+
+</body>
+</html>

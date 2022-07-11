@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"feng19.com","root":"/","scheme":"Mist","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="《Erlang 发布版本升级》 系列第六篇 - 升级模块与进程 或许有些同学会很容易搞混,在升级中到底是升级进程还是升级代码模块. 答案显然是肯定的,升级代码模块,而我们说的升级进程,只是在需要同步升级进程内部状态的时候才需要,而同步更新也是先加载更新新的代码模块,然后再通知进程执行内部状态的转变. 只是,我们都知道我们appup里面只有提到模块,里面并没有提及到进程,而我们都知道进程的标示pid">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Erlang 发布版本升级-6 升级模块与进程">
+<meta property="og:url" content="https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-6%20%E5%8D%87%E7%BA%A7%E6%A8%A1%E5%9D%97%E4%B8%8E%E8%BF%9B%E7%A8%8B/">
+<meta property="og:site_name" content="在路上">
+<meta property="og:description" content="《Erlang 发布版本升级》 系列第六篇 - 升级模块与进程 或许有些同学会很容易搞混,在升级中到底是升级进程还是升级代码模块. 答案显然是肯定的,升级代码模块,而我们说的升级进程,只是在需要同步升级进程内部状态的时候才需要,而同步更新也是先加载更新新的代码模块,然后再通知进程执行内部状态的转变. 只是,我们都知道我们appup里面只有提到模块,里面并没有提及到进程,而我们都知道进程的标示pid">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2017-09-30T16:00:06.000Z">
+<meta property="article:modified_time" content="2022-07-11T09:50:31.877Z">
+<meta property="article:author" content="feng19">
+<meta property="article:tag" content="erlang">
+<meta property="article:tag" content="release upgrade">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-6%20%E5%8D%87%E7%BA%A7%E6%A8%A1%E5%9D%97%E4%B8%8E%E8%BF%9B%E7%A8%8B/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Erlang 发布版本升级-6 升级模块与进程 | 在路上</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?8f25ec0a3f57bade10cde5125c9425d2";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="在路上" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line toggle-line-first"></span>
+        <span class="toggle-line toggle-line-middle"></span>
+        <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">在路上</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">On the road!</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#进程模块关系"><span class="nav-number">1.</span> <span class="nav-text">进程模块关系</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#supervisor子规格的dynamic"><span class="nav-number">2.</span> <span class="nav-text">supervisor子规格的dynamic</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="feng19"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">feng19</p>
+  <div class="site-description" itemprop="description">程序路上 成长路上 梦想路上</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/feng19" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;feng19" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:feng_19@foxmail.com" title="E-Mail → mailto:feng_19@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-6%20%E5%8D%87%E7%BA%A7%E6%A8%A1%E5%9D%97%E4%B8%8E%E8%BF%9B%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="feng19">
+      <meta itemprop="description" content="程序路上 成长路上 梦想路上">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="在路上">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Erlang 发布版本升级-6 升级模块与进程
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-01 00:00:06" itemprop="dateCreated datePublished" datetime="2017-10-01T00:00:06+08:00">2017-10-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 17:50:31" itemprop="dateModified" datetime="2022-07-11T17:50:31+08:00">2022-07-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Erlang-Release-Upgrade/" itemprop="url" rel="index"><span itemprop="name">Erlang-Release-Upgrade</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-6%20%E5%8D%87%E7%BA%A7%E6%A8%A1%E5%9D%97%E4%B8%8E%E8%BF%9B%E7%A8%8B/" class="post-meta-item leancloud_visitors" data-flag-title="Erlang 发布版本升级-6 升级模块与进程" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-6%20%E5%8D%87%E7%BA%A7%E6%A8%A1%E5%9D%97%E4%B8%8E%E8%BF%9B%E7%A8%8B/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/09/30/Erlang 发布版本升级-6 升级模块与进程/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《Erlang 发布版本升级》 系列第六篇 - 升级模块与进程</p>
+<p>或许有些同学会很容易搞混,在升级中到底是升级进程还是升级代码模块.</p>
+<p>答案显然是肯定的,升级代码模块,而我们说的升级进程,只是在需要同步升级进程内部状态的时候才需要,而同步更新也是先加载更新新的代码模块,然后再通知进程执行内部状态的转变.</p>
+<p>只是,我们都知道我们appup里面只有提到模块,里面并没有提及到进程,而我们都知道进程的标示pid,都是动态的,而我们在做同步代码热更的时候,是怎么将模块与进程管理起来的呢?下面我带大家从源码中找出答案.</p>
+<a id="more"></a>
+
+<h1 id="进程模块关系"><a href="#进程模块关系" class="headerlink" title="进程模块关系"></a>进程模块关系</h1><p>我们知道,进程标示pid都是动态的,因此我们不可能在appup文件里面写这个进程的pid;所以我们想要通知一个进程做内部状态变更,只能通过某种方式让这些进程与模块建立关系.</p>
+<p>之前的章节我们有提到过,指令分两种:</p>
+<blockquote>
+<p>OTP supports a set of <strong>release handling instructions</strong> that are used when creating .appup files. The release handler understands a subset of these, the <strong>low-level</strong> instructions. To make it easier for the user, there are also a number of <strong>high-level</strong> instructions, which are translated to low-level instructions by systools:make_relup.</p>
+<p>普通(High-Level)指令和底层(Low-Level)指令的区别: 普通指令是提供给用户使用的,而底层指令是通过普通指令转换而来的</p>
+<p>我们之前生产的<code>*.appup</code>文件, 会在版本发布前的relup阶段,通过调用<code>systools:make_relup</code>将全部普通指令转换为底层指令</p>
+</blockquote>
+<p>我们先来看看第一种:</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">%% appup generated for rus_gen_server by rebar3_appup_plugin (2017/09/18 14:46:53)</span></span><br><span class="line">&#123; <span class="string">"0.2.0"</span>,</span><br><span class="line">    [&#123; <span class="string">"0.1.0"</span>,</span><br><span class="line">        [&#123;update,rus_gen_server,&#123;advanced,[]&#125;,brutal_purge,brutal_purge,[]&#125;] &#125;],</span><br><span class="line">    [&#123; <span class="string">"0.1.0"</span>,</span><br><span class="line">        [&#123;update,rus_gen_server,&#123;advanced,[]&#125;,brutal_purge,brutal_purge,[]&#125;] &#125;]</span><br><span class="line">&#125;.</span><br></pre></td></tr></table></figure>
+
+<p>这是我们需要同步更新rus_gen_server这个代码模块的appup文件,然后看看转换之后的relup:</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="string">"0.2.0"</span>,</span><br><span class="line"> [&#123;<span class="string">"0.1.0"</span>,[],</span><br><span class="line">   [&#123;load_object_code,&#123;rus_gen_server,<span class="string">"0.2.0"</span>,[rus_gen_server]&#125;&#125;,</span><br><span class="line">    point_of_no_return,</span><br><span class="line">    &#123;suspend,[rus_gen_server]&#125;,</span><br><span class="line">    &#123;load,&#123;rus_gen_server,brutal_purge,brutal_purge&#125;&#125;,</span><br><span class="line">    &#123;code_change,up,[&#123;rus_gen_server,[]&#125;]&#125;,</span><br><span class="line">    &#123;resume,[rus_gen_server]&#125;]&#125;],</span><br><span class="line"> [&#123;<span class="string">"0.1.0"</span>,[],</span><br><span class="line">   [&#123;load_object_code,&#123;rus_gen_server,<span class="string">"0.1.0"</span>,[rus_gen_server]&#125;&#125;,</span><br><span class="line">    point_of_no_return,</span><br><span class="line">    &#123;suspend,[rus_gen_server]&#125;,</span><br><span class="line">    &#123;code_change,down,[&#123;rus_gen_server,[]&#125;]&#125;,</span><br><span class="line">    &#123;load,&#123;rus_gen_server,brutal_purge,brutal_purge&#125;&#125;,</span><br><span class="line">    &#123;resume,[rus_gen_server]&#125;]&#125;]&#125;.</span><br></pre></td></tr></table></figure>
+
+<p>已经转换成底层指令了,接下来我们看一下在更新的时候,系统是怎么执行这些指令的:</p>
+<p>我们从暂停(suspend)指令开始看起:</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">eval</span><span class="params">(&#123;suspend, Modules&#125;, EvalState)</span> -&gt;</span></span><br><span class="line">    Procs = get_supervised_procs(),</span><br><span class="line">    NewSuspended =</span><br><span class="line">    lists:foldl(<span class="keyword">fun</span>(ModSpec, Suspended) -&gt;</span><br><span class="line">                &#123;Module, Def&#125; = <span class="keyword">case</span> ModSpec <span class="keyword">of</span> </span><br><span class="line">                        &#123;Mod, ModTimeout&#125; -&gt;</span><br><span class="line">                            &#123;Mod, ModTimeout&#125;;</span><br><span class="line">                        Mod -&gt;</span><br><span class="line">                            &#123;Mod, default&#125;</span><br><span class="line">                        <span class="keyword">end</span>,</span><br><span class="line">                Timeout = get_opt(suspend_timeout, EvalState, Def),</span><br><span class="line">                Pids = suspend(Module, Procs, Timeout),</span><br><span class="line">                [&#123;Module, Pids&#125; | Suspended]</span><br><span class="line">            <span class="keyword">end</span>,</span><br><span class="line">            EvalState#eval_state.suspended,</span><br><span class="line">            Modules),</span><br><span class="line">    EvalState#eval_state&#123;suspended = NewSuspended&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到这个方法最主要的方法就是通过调用方法<code>get_supervised_procs()</code> 获得了模块与进程的一个对应关系,然后保存进了内部状态里,之后还会用到.</p>
+<p>我们再来看看<code>get_supervised_procs()</code> 这个方法做了什么事情:</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">get_supervised_procs</span><span class="params">()</span> -&gt;</span> <span class="comment">%% 查找到应用下所有的sup进程</span></span><br><span class="line">    lists:foldl(</span><br><span class="line">      <span class="keyword">fun</span>(Application, Procs) -&gt;</span><br><span class="line">              get_master_procs(Application,</span><br><span class="line">                               Procs,</span><br><span class="line">                               application_controller:get_master(Application))</span><br><span class="line">      <span class="keyword">end</span>,</span><br><span class="line">      [],</span><br><span class="line">      get_application_names()).</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">get_supervised_procs</span><span class="params">(_, Root, Procs, &#123;ok, SupMod&#125;)</span> -&gt;</span></span><br><span class="line">    get_procs(maybe_supervisor_which_children(Root, SupMod, Root), Root) ++</span><br><span class="line">        [&#123;undefined, undefined, Root, [SupMod]&#125; |  Procs];</span><br><span class="line"><span class="function"><span class="title">get_supervised_procs</span><span class="params">(Application, Root, Procs, &#123;error, _&#125;)</span> -&gt;</span></span><br><span class="line">    error_logger:error_msg(<span class="string">"release_handler: cannot find top supervisor for "</span></span><br><span class="line">                           <span class="string">"application ~w~n"</span>, [Application]),</span><br><span class="line">    get_procs(maybe_supervisor_which_children(Root, Application, Root), Root) ++ Procs.</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">get_application_names</span><span class="params">()</span> -&gt;</span></span><br><span class="line">    lists:map(<span class="keyword">fun</span>(&#123;Application, _Name, _Vsn&#125;) -&gt;</span><br><span class="line">                      Application</span><br><span class="line">              <span class="keyword">end</span>,</span><br><span class="line">              application:which_applications()).</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">get_master_procs</span><span class="params">(Application, Procs, Pid)</span> <span class="title">when</span> <span class="title">is_pid</span><span class="params">(Pid)</span> -&gt;</span></span><br><span class="line">    &#123;Root, _AppMod&#125; = application_master:get_child(Pid),</span><br><span class="line">    get_supervised_procs(Application, Root, Procs, get_supervisor_module(Root));</span><br><span class="line"><span class="function"><span class="title">get_master_procs</span><span class="params">(_, Procs, _)</span> -&gt;</span></span><br><span class="line">    Procs.</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">get_procs</span><span class="params">([&#123;Name, Pid, worker, dynamic&#125; | T], Sup)</span> <span class="title">when</span> <span class="title">is_pid</span><span class="params">(Pid)</span> -&gt;</span> <span class="comment">%% Modules=dynamic</span></span><br><span class="line">    Mods = maybe_get_dynamic_mods(Name, Pid),</span><br><span class="line">    [&#123;Sup, Name, Pid, Mods&#125; | get_procs(T, Sup)];</span><br><span class="line"><span class="function"><span class="title">get_procs</span><span class="params">([&#123;Name, Pid, worker, Mods&#125; | T], Sup)</span> <span class="title">when</span> <span class="title">is_pid</span><span class="params">(Pid)</span>, <span class="title">is_list</span><span class="params">(Mods)</span> -&gt;</span> <span class="comment">%% 动态去获取Modules</span></span><br><span class="line">    [&#123;Sup, Name, Pid, Mods&#125; | get_procs(T, Sup)];</span><br><span class="line"><span class="function"><span class="title">get_procs</span><span class="params">([&#123;Name, Pid, supervisor, Mods&#125; | T], Sup)</span> <span class="title">when</span> <span class="title">is_pid</span><span class="params">(Pid)</span> -&gt;</span></span><br><span class="line">    [&#123;Sup, Name, Pid, Mods&#125; | get_procs(T, Sup)] ++</span><br><span class="line">        get_procs(maybe_supervisor_which_children(Pid, Name, Pid), Pid);</span><br><span class="line"><span class="function"><span class="title">get_procs</span><span class="params">([_H | T], Sup)</span> -&gt;</span></span><br><span class="line">    get_procs(T, Sup);</span><br><span class="line"><span class="function"><span class="title">get_procs</span><span class="params">(_, _Sup)</span> -&gt;</span></span><br><span class="line">    [].</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">maybe_supervisor_which_children</span><span class="params">(Proc, Name, Pid)</span> -&gt;</span></span><br><span class="line">    <span class="keyword">case</span> get_proc_state(Proc) <span class="keyword">of</span></span><br><span class="line">        noproc -&gt;</span><br><span class="line">            <span class="comment">%% process exited before we could interrogate it.</span></span><br><span class="line">            <span class="comment">%% not necessarily a bug, but reporting a warning as a curiosity.</span></span><br><span class="line">            error_logger:warning_msg(<span class="string">"release_handler: a process (~p) exited"</span></span><br><span class="line">                                     <span class="string">" during supervision tree interrogation."</span></span><br><span class="line">                                     <span class="string">" Continuing ...~n"</span>, [Proc]),</span><br><span class="line">            [];</span><br><span class="line"></span><br><span class="line">        suspended -&gt;</span><br><span class="line">            error_logger:error_msg(<span class="string">"release_handler: a which_children call"</span></span><br><span class="line">                                   <span class="string">" to ~p (~w) was avoided. This supervisor"</span></span><br><span class="line">                                   <span class="string">" is suspended and should likely be upgraded"</span></span><br><span class="line">                                   <span class="string">" differently. Exiting ...~n"</span>, [Name, Pid]),</span><br><span class="line">            error(suspended_supervisor);</span><br><span class="line"></span><br><span class="line">        running -&gt;</span><br><span class="line">            <span class="keyword">case</span> <span class="keyword">catch</span> supervisor:which_children(Pid) <span class="keyword">of</span></span><br><span class="line">                Res <span class="keyword">when</span> is_list(Res) -&gt;</span><br><span class="line">                    Res;</span><br><span class="line">                Other -&gt;</span><br><span class="line">                    error_logger:error_msg(<span class="string">"release_handler: ~p~nerror during"</span></span><br><span class="line">                                           <span class="string">" a which_children call to ~p (~w)."</span></span><br><span class="line">                                           <span class="string">" [State: running] Exiting ... ~n"</span>,</span><br><span class="line">                                           [Other, Name, Pid]),</span><br><span class="line">                    error(which_children_failed)</span><br><span class="line">            <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span>.</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>首先通过拿到全局所有的应用的master进程</li>
+<li>拿到master下面的子进程,也就是顶级supervisor</li>
+<li>获取顶级supervisor下面的所有子进程</li>
+<li>子进程通过子进程规格定义里的Mods对应:<code>{Sup, Name, Pid, Mods}</code></li>
+</ul>
+<p>通过上面的代码我们可以发现,在进行代码暂停之前,系统通过调用get_supervised_procs()找到应用下的sup,然后通过sup的内部状态获取子进程和它的规格定义,我们都知道,规格定义里面有指定了这个进程对应的模块:</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">-type child_spec<span class="params">()</span> :: #&#123;id := child_id<span class="params">()</span>,       % mandatory</span><br><span class="line">         start := mfargs<span class="params">()</span>,      % mandatory</span><br><span class="line">         restart =&gt; restart<span class="params">()</span>,   % optional</span><br><span class="line">         shutdown =&gt; shutdown<span class="params">()</span>, % optional</span><br><span class="line">         type =&gt; worker<span class="params">()</span>,       % optional</span><br><span class="line">         modules =&gt; modules<span class="params">()</span>&#125;.</span><br><span class="line">-type modules<span class="params">()</span>  :: [module<span class="params">()</span>] | 'dynamic'.</span><br></pre></td></tr></table></figure>
+
+<p>可以指定为一个列表也可以设置为dynamic,这种情况下一节再细谈,先来说说模块列表的情况:</p>
+<p>最后get_supervised_procs()会返回这样一个列表[{Sup, Name, Pid, Mods},…],可以看到列表里面已经包含了pid和Mods,也就建立起了对应关系了,但是这里有个前提条件,就是你的进程必须被这个应用下的sup进程管理,如果不是的话系统是不可能找到他们之间的对应关系的.</p>
+<p>这样一个流程之后,就获得了一个进程与多个模块的一对多对应关系,我们再看会代码:</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">eval</span><span class="params">(&#123;suspend, Modules&#125;, EvalState)</span> -&gt;</span></span><br><span class="line">    Procs = get_supervised_procs(),</span><br><span class="line">    NewSuspended =</span><br><span class="line">    lists:foldl(<span class="keyword">fun</span>(ModSpec, Suspended) -&gt;</span><br><span class="line">            &#123;Module, Def&#125; = <span class="keyword">case</span> ModSpec <span class="keyword">of</span> </span><br><span class="line">                    &#123;Mod, ModTimeout&#125; -&gt;</span><br><span class="line">                        &#123;Mod, ModTimeout&#125;;</span><br><span class="line">                    Mod -&gt;</span><br><span class="line">                        &#123;Mod, default&#125;</span><br><span class="line">                    <span class="keyword">end</span>,</span><br><span class="line">            Timeout = get_opt(suspend_timeout, EvalState, Def),</span><br><span class="line">            Pids = suspend(Module, Procs, Timeout),</span><br><span class="line">            [&#123;Module, Pids&#125; | Suspended]</span><br><span class="line">        <span class="keyword">end</span>,</span><br><span class="line">        EvalState#eval_state.suspended,</span><br><span class="line">        Modules),</span><br><span class="line">    EvalState#eval_state&#123;suspended = NewSuspended&#125;;</span><br><span class="line">...</span><br><span class="line"><span class="function"><span class="title">suspend</span><span class="params">(Mod, Procs, Timeout)</span> -&gt;</span></span><br><span class="line">    lists:zf(<span class="keyword">fun</span>(&#123;_Sup, _Name, Pid, Mods&#125;) -&gt; </span><br><span class="line">             <span class="keyword">case</span> lists:member(Mod, Mods) <span class="keyword">of</span></span><br><span class="line">             <span class="literal">true</span> -&gt;</span><br><span class="line">                 <span class="keyword">case</span> <span class="keyword">catch</span> sys_suspend(Pid, Timeout) <span class="keyword">of</span></span><br><span class="line">                 ok -&gt; &#123;true, Pid&#125;;</span><br><span class="line">                 _ -&gt; </span><br><span class="line">                     <span class="comment">% If the proc hangs, make sure to</span></span><br><span class="line">                     <span class="comment">% resume it when it gets suspended!</span></span><br><span class="line">                     <span class="keyword">catch</span> sys:resume(Pid),</span><br><span class="line">                     <span class="literal">false</span></span><br><span class="line">                 <span class="keyword">end</span>;</span><br><span class="line">             <span class="literal">false</span> -&gt;</span><br><span class="line">                 <span class="literal">false</span></span><br><span class="line">             <span class="keyword">end</span></span><br><span class="line">         <span class="keyword">end</span>,</span><br><span class="line">         Procs).</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">sys_suspend</span><span class="params">(Pid, default)</span> -&gt;</span></span><br><span class="line">    sys:suspend(Pid);</span><br><span class="line"><span class="function"><span class="title">sys_suspend</span><span class="params">(Pid, Timeout)</span> -&gt;</span></span><br><span class="line">    sys:suspend(Pid, Timeout).</span><br></pre></td></tr></table></figure>
+
+<p>可以看到代码中{pid, Mods}这样的关系,经过一轮转换之后变成了{Module, Pids}的关系,然后并把执行暂停成功的关系保存起来,以后还会用到,这样就完成了suspend指令了.</p>
+<p>suspend之后是指令<code>{load,{rus_gen_server,brutal_purge,brutal_purge}}</code>,这个指令只是简单的将代码加载进vm而已,继续看下一条指令:<code>{code_change,up,[{rus_gen_server,[]}]}</code> 执行<code>code_change</code>:</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">eval</span><span class="params">(&#123;code_change, Modules&#125;, EvalState)</span> -&gt;</span></span><br><span class="line">    eval(&#123;code_change, up, Modules&#125;, EvalState);</span><br><span class="line"><span class="function"><span class="title">eval</span><span class="params">(&#123;code_change, Mode, Modules&#125;, EvalState)</span> -&gt;</span></span><br><span class="line">    Suspended = EvalState#eval_state.suspended,</span><br><span class="line">    Vsns = EvalState#eval_state.vsns,</span><br><span class="line">    Timeout = get_opt(code_change_timeout, EvalState, default),</span><br><span class="line">    lists:foreach(<span class="keyword">fun</span>(&#123;Mod, Extra&#125;) -&gt;</span><br><span class="line">           Vsn =</span><br><span class="line">               <span class="keyword">case</span> lists:keysearch(Mod, <span class="number">1</span>, Vsns) <span class="keyword">of</span></span><br><span class="line">              &#123;value, &#123;Mod, OldVsn, _NewVsn&#125;&#125;</span><br><span class="line">                <span class="keyword">when</span> Mode == up -&gt; OldVsn;</span><br><span class="line">              &#123;value, &#123;Mod, _OldVsn, NewVsn&#125;&#125;</span><br><span class="line">                <span class="keyword">when</span> Mode == down -&gt; &#123;down, NewVsn&#125;;</span><br><span class="line">              _ <span class="keyword">when</span> Mode == up -&gt; undefined;</span><br><span class="line">              _ -&gt; &#123;down, undefined&#125;</span><br><span class="line">               <span class="keyword">end</span>,</span><br><span class="line">           <span class="keyword">case</span> lists:keysearch(Mod, <span class="number">1</span>, Suspended) <span class="keyword">of</span></span><br><span class="line">               &#123;value, &#123;_Mod, Pids&#125;&#125; -&gt;</span><br><span class="line">              change_code(Pids, Mod, Vsn, Extra, Timeout);</span><br><span class="line">               _ -&gt; ok</span><br><span class="line">           <span class="keyword">end</span></span><br><span class="line">        <span class="keyword">end</span>,</span><br><span class="line">        Modules),</span><br><span class="line">    EvalState;</span><br><span class="line">...</span><br><span class="line"><span class="function"><span class="title">change_code</span><span class="params">(Pids, Mod, Vsn, Extra, Timeout)</span> -&gt;</span></span><br><span class="line">    Fun = <span class="keyword">fun</span>(Pid) -&gt; </span><br><span class="line">          <span class="keyword">case</span> sys_change_code(Pid, Mod, Vsn, Extra, Timeout) <span class="keyword">of</span></span><br><span class="line">              ok -&gt;</span><br><span class="line">              ok;</span><br><span class="line">              &#123;error,Reason&#125; -&gt;</span><br><span class="line">              throw(&#123;code_change_failed,Pid,Mod,Vsn,Reason&#125;)</span><br><span class="line">          <span class="keyword">end</span></span><br><span class="line">      <span class="keyword">end</span>,</span><br><span class="line">    lists:foreach(Fun, Pids).</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">sys_change_code</span><span class="params">(Pid, Mod, Vsn, Extra, default)</span> -&gt;</span></span><br><span class="line">    sys:change_code(Pid, Mod, Vsn, Extra);</span><br><span class="line"><span class="function"><span class="title">sys_change_code</span><span class="params">(Pid, Mod, Vsn, Extra, Timeout)</span> -&gt;</span></span><br><span class="line">    sys:change_code(Pid, Mod, Vsn, Extra, Timeout).</span><br></pre></td></tr></table></figure>
+
+<p>code_change指令是拿到了之前保存的已经暂停的进程与模块对应关系列表,然后从中查找去查找模块,然后再逐个进程进行通知执行变更内部状态的方法,完成之后是恢复指令:<code>{resume,[rus_gen_server]}]</code>, resume:</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">eval</span><span class="params">(&#123;resume, Modules&#125;, EvalState)</span> -&gt;</span></span><br><span class="line">    NewSuspended =</span><br><span class="line">    lists:foldl(<span class="keyword">fun</span>(Mod, Suspended) -&gt;</span><br><span class="line">                lists:filter(<span class="keyword">fun</span>(&#123;Mod2, Pids&#125;) <span class="keyword">when</span> Mod2 == Mod -&gt;</span><br><span class="line">                         resume(Pids),</span><br><span class="line">                         <span class="literal">false</span>;</span><br><span class="line">                        (_) -&gt;</span><br><span class="line">                         <span class="literal">true</span></span><br><span class="line">                     <span class="keyword">end</span>,</span><br><span class="line">                     Suspended)</span><br><span class="line">            <span class="keyword">end</span>,</span><br><span class="line">            EvalState#eval_state.suspended,</span><br><span class="line">            Modules),</span><br><span class="line">    EvalState#eval_state&#123;suspended = NewSuspended&#125;;</span><br><span class="line">...</span><br><span class="line"><span class="function"><span class="title">resume</span><span class="params">(Pids)</span> -&gt;</span></span><br><span class="line">    lists:foreach(<span class="keyword">fun</span>(Pid) -&gt; <span class="keyword">catch</span> sys:resume(Pid) <span class="keyword">end</span>, Pids).</span><br></pre></td></tr></table></figure>
+
+<p>恢复这个指令比较简单,依然是拿到之前的关系列表,然后查找到模块,然后再逐个进程进行恢复,恢复成功之后就从列表里面删除掉这个模块和进程的对应关系.</p>
+<p>整个流程就这么简单</p>
+<hr>
+<h1 id="supervisor子规格的dynamic"><a href="#supervisor子规格的dynamic" class="headerlink" title="supervisor子规格的dynamic"></a>supervisor子规格的dynamic</h1><p>从上面的代码我们可以看到一个地方:</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">get_procs</span><span class="params">([&#123;Name, Pid, worker, dynamic&#125; | T], Sup)</span> <span class="title">when</span> <span class="title">is_pid</span><span class="params">(Pid)</span> -&gt;</span> <span class="comment">%% Modules=dynamic</span></span><br><span class="line">    Mods = maybe_get_dynamic_mods(Name, Pid),  <span class="comment">%% 动态去获取Modules</span></span><br><span class="line">    [&#123;Sup, Name, Pid, Mods&#125; | get_procs(T, Sup)];</span><br><span class="line"><span class="function"><span class="title">get_procs</span><span class="params">([&#123;Name, Pid, worker, Mods&#125; | T], Sup)</span> <span class="title">when</span> <span class="title">is_pid</span><span class="params">(Pid)</span>, <span class="title">is_list</span><span class="params">(Mods)</span> -&gt;</span> <span class="comment">%% 正常Modules</span></span><br><span class="line">    [&#123;Sup, Name, Pid, Mods&#125; | get_procs(T, Sup)];</span><br></pre></td></tr></table></figure>
+
+<p>了解supervisor子规格定义都知道,最后一个字段是允许设置为dynamic:</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">-type child_spec<span class="params">()</span> :: #&#123;id := child_id<span class="params">()</span>,       % mandatory</span><br><span class="line">         start := mfargs<span class="params">()</span>,      % mandatory</span><br><span class="line">         restart =&gt; restart<span class="params">()</span>,   % optional</span><br><span class="line">         shutdown =&gt; shutdown<span class="params">()</span>, % optional</span><br><span class="line">         type =&gt; worker<span class="params">()</span>,       % optional</span><br><span class="line">         modules =&gt; modules<span class="params">()</span>&#125;.</span><br><span class="line">-type modules<span class="params">()</span>  :: [module<span class="params">()</span>] | 'dynamic'.</span><br></pre></td></tr></table></figure>
+
+<p>那这个有什么作用呢?</p>
+<p>我们之前有用过gen_event吧,没有用过也没有关系,error_logger用过吧,error_logger的就是通过gen_event来实现的,我们知道我们可以通过add_report_handler或者delete_report_handler接口变更回调模块,内部其实使用的是gen_event的add_handler和delete_handler,也就是说gen_event进程的回调模块不是固定的,可以在运行中动态的增加删除,所以挂载到supervisor下的时候,子规格不能填写固定的,只能填dynamic,当然,在升级的时候也是需要动态去获取这个进程的回调模块列表,下面我们来看看代码实现:</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">get_supervised_procs</span><span class="params">()</span> -&gt;</span>  <span class="comment">%% 查找到应用下所有的sup进程</span></span><br><span class="line">    lists:foldl(</span><br><span class="line">      <span class="keyword">fun</span>(Application, Procs) -&gt;</span><br><span class="line">              get_master_procs(Application,</span><br><span class="line">                               Procs,</span><br><span class="line">                               application_controller:get_master(Application))</span><br><span class="line">      <span class="keyword">end</span>,</span><br><span class="line">      [],</span><br><span class="line">      get_application_names()).</span><br><span class="line">...</span><br><span class="line"><span class="function"><span class="title">get_procs</span><span class="params">([&#123;Name, Pid, worker, dynamic&#125; | T], Sup)</span> <span class="title">when</span> <span class="title">is_pid</span><span class="params">(Pid)</span> -&gt;</span> <span class="comment">%% Modules=dynamic</span></span><br><span class="line">    Mods = maybe_get_dynamic_mods(Name, Pid),  <span class="comment">%% 动态去获取Modules</span></span><br><span class="line">    [&#123;Sup, Name, Pid, Mods&#125; | get_procs(T, Sup)];</span><br><span class="line"><span class="function"><span class="title">get_procs</span><span class="params">([&#123;Name, Pid, worker, Mods&#125; | T], Sup)</span> <span class="title">when</span> <span class="title">is_pid</span><span class="params">(Pid)</span>, <span class="title">is_list</span><span class="params">(Mods)</span> -&gt;</span> <span class="comment">%% 正常Modules</span></span><br><span class="line">    [&#123;Sup, Name, Pid, Mods&#125; | get_procs(T, Sup)];</span><br><span class="line">...</span><br><span class="line"><span class="function"><span class="title">maybe_get_dynamic_mods</span><span class="params">(Name, Pid)</span> -&gt;</span></span><br><span class="line">    <span class="keyword">case</span> <span class="keyword">catch</span> gen:call(Pid, self(), get_modules) <span class="keyword">of</span>  <span class="comment">%% 通过发送消息获取</span></span><br><span class="line">        &#123;ok, Res&#125; -&gt;</span><br><span class="line">            Res;</span><br><span class="line">        Other -&gt;</span><br><span class="line">            error_logger:error_msg(<span class="string">"release_handler: ~p~nerror during a"</span></span><br><span class="line">                                   <span class="string">" get_modules call to ~p (~w),"</span></span><br><span class="line">                                   <span class="string">" there may be an error in it's"</span></span><br><span class="line">                                   <span class="string">" childspec. Exiting ...~n"</span>,</span><br><span class="line">                                   [Other, Name, Pid]),</span><br><span class="line">            error(get_modules_failed)</span><br><span class="line">    <span class="keyword">end</span>.</span><br></pre></td></tr></table></figure>
+
+<p>可以看到上面的代码,当设定为dynamic时,会去发送一个get_modules消息给进程去获取模块列表,我们来看看gen_event代码,应该会有相应接受处理的地方:</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;_From, Tag, get_modules&#125; -&gt;</span><br><span class="line">    reply(Tag, get_modules(MSL)),</span><br><span class="line">    loop(Parent, ServerName, MSL, Debug, <span class="literal">false</span>);</span><br><span class="line">...</span><br><span class="line"><span class="comment">%% Message from the release_handler.</span></span><br><span class="line"><span class="comment">%% The list of modules got to be a set, i.e. no duplicate elements!</span></span><br><span class="line"><span class="function"><span class="title">get_modules</span><span class="params">(MSL)</span> -&gt;</span></span><br><span class="line">    Mods = [Handler#handler.module || Handler &lt;- MSL],</span><br><span class="line">    ordsets:to_list(ordsets:from_list(Mods)).</span><br></pre></td></tr></table></figure>
+
+<p>可以看到gen_event实现了这个方法,并返回了需要的模块列表;所以大家下次如果在supervisor用到gen_event或者类似的会变更回调模块的进程的时候,记得要填dynamic,不然你的代码更新会失败的.</p>
+<hr>
+<p>通过本章我们了解到:</p>
+<ul>
+<li>进程必须在应用的进程树的管理下才能在模块代码被更新的时候执行状态变更回调.</li>
+<li>如果回调模块是动态的,也需要sup的子规格里指定为dynamic.</li>
+</ul>
+<p>从这一章中我们了解到,同步指令最后会被转换成调用sys模块的对应执行方法,下一章节我们会从源码的角度看一下sys模块的执行流程.</p>
+<p>今天就到这里,玩得开心~</p>
+<p>end</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>梦想基金</div>
+  <button onclick="document.getElementById('post-reward').classList.toggle('active');">
+    赞赏
+  </button>
+  <div id="post-reward">
+      
+      <div>
+        <img src="/images/wechatpay.png" alt="feng19 微信">
+        <p>微信</p>
+      </div>
+      
+      <div>
+        <img src="/images/alipay.png" alt="feng19 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/erlang/" rel="tag"># erlang</a>
+              <a href="/tags/release-upgrade/" rel="tag"># release upgrade</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-7%20sys%E6%A8%A1%E5%9D%97/" rel="prev" title="Erlang 发布版本升级-7 sys模块">
+      <i class="fa fa-chevron-left"></i> Erlang 发布版本升级-7 sys模块
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-5%20supervisor%E6%9B%B4%E6%96%B0%E8%AF%B4%E6%98%8E/" rel="next" title="Erlang 发布版本升级-5 supervisor更新说明">
+      Erlang 发布版本升级-5 supervisor更新说明 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="http://www.beian.miit.gov.cn/" rel="noopener" target="_blank">粤ICP备20060017号 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">feng19</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"VDj7hFAA8eL6I5UmENlytJhh-gzGzoHsz","app_key":"AOi8dJU8VtxgAuyaPcplC9lP","server_url":null,"security":true};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://feng19.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-6%20%E5%8D%87%E7%BA%A7%E6%A8%A1%E5%9D%97%E4%B8%8E%E8%BF%9B%E7%A8%8B/";
+    this.page.identifier = "2017/09/30/Erlang 发布版本升级-6 升级模块与进程/";
+    this.page.title = "Erlang 发布版本升级-6 升级模块与进程";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://feng19.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>

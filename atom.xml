@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>在路上</title>
+  <icon>https://feng19.com/icon.png</icon>
+  <subtitle>On the road!</subtitle>
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="https://feng19.com/"/>
+  <updated>2022-07-11T09:50:31.877Z</updated>
+  <id>https://feng19.com/</id>
+  
+  <author>
+    <name>feng19</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Elixir 微信(WeChat) SDK 使用指南</title>
+    <link href="https://feng19.com/2022/07/08/wechat_for_elixir_usage/"/>
+    <id>https://feng19.com/2022/07/08/wechat_for_elixir_usage/</id>
+    <published>2022-07-08T07:30:00.000Z</published>
+    <updated>2022-07-11T09:50:31.877Z</updated>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h2&gt;&lt;p&gt;在国内，腾讯的社交网络及其强大，其社交生态也是百花齐放，而微信是其王牌中的王牌。&lt;/p&gt;
+&lt;p&gt;Elixir，继承了 Erlang 的衣钵，使用 Ruby 的皮肤，再加上强大的社区，开发出了众多神器，让这个小众语言在全球开始遍地开花。&lt;/p&gt;
+&lt;p&gt;为结合两者，因此有了此文。&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="wechat" scheme="https://feng19.com/categories/wechat/"/>
+    
+    
+      <category term="elixir" scheme="https://feng19.com/tags/elixir/"/>
+    
+      <category term="wechat" scheme="https://feng19.com/tags/wechat/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>利用码云镜像加速kerl</title>
+    <link href="https://feng19.com/2019/08/22/%E5%88%A9%E7%94%A8%E7%A0%81%E4%BA%91%E9%95%9C%E5%83%8F%E5%8A%A0%E9%80%9Fkerl/"/>
+    <id>https://feng19.com/2019/08/22/%E5%88%A9%E7%94%A8%E7%A0%81%E4%BA%91%E9%95%9C%E5%83%8F%E5%8A%A0%E9%80%9Fkerl/</id>
+    <published>2019-08-22T09:30:00.000Z</published>
+    <updated>2022-07-11T09:50:31.877Z</updated>
+    
+    <summary type="html">
+    
+      &lt;p&gt;gitee 下载加速已失效，因为 gitee 在下载页面加了机器验证，无法再通过命令行来下载，目前国内安装&lt;code&gt;erlang&lt;/code&gt;最优解，建议使用&lt;code&gt;asdf&lt;/code&gt;来安装：&lt;/p&gt;
+&lt;figure class=&quot;highlight shell&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;OTP_GITHUB_URL=&quot;https://hub.fastgit.org/erlang/otp&quot; asdf install erlang 23.0&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+
+&lt;p&gt;如有更好的方式，请告知本人，谢谢&lt;/p&gt;
+&lt;p&gt;&lt;del&gt;最近在用&lt;a href=&quot;https://github.com/kerl/kerl&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;&lt;code&gt;kerl&lt;/code&gt;&lt;/a&gt;安装不同版本的&lt;code&gt;erlang&lt;/code&gt;，因为&lt;code&gt;kerl&lt;/code&gt;默认是从&lt;a href=&quot;http://erlang.org/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;官网&lt;/a&gt;下载包的，但是&lt;code&gt;erlang&lt;/code&gt;的官网本来就慢，不知道是不是没有&lt;code&gt;CDN&lt;/code&gt;或者国内没有对应的&lt;code&gt;CDN&lt;/code&gt;节点，速度实在堪忧。&lt;/del&gt;&lt;/p&gt;
+&lt;p&gt;&lt;del&gt;幸好&lt;code&gt;kerl&lt;/code&gt;支持动态配置从&lt;code&gt;github&lt;/code&gt;的包来构建，但是测试了一下&lt;code&gt;github&lt;/code&gt;的下载也是非常慢。&lt;/del&gt;&lt;/p&gt;
+&lt;p&gt;&lt;del&gt;突然灵机一动，想到码云(&lt;code&gt;gitee&lt;/code&gt;)有做一下热门的开源项目的镜像，跟&lt;code&gt;github&lt;/code&gt;上的项目是定时同步的，因此是否可以去利用这个呢？&lt;/del&gt;&lt;/p&gt;
+&lt;p&gt;&lt;del&gt;实验一下便知！&lt;/del&gt;&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="erlang" scheme="https://feng19.com/categories/erlang/"/>
+    
+    
+      <category term="erlang" scheme="https://feng19.com/tags/erlang/"/>
+    
+      <category term="kerl" scheme="https://feng19.com/tags/kerl/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Erlang 调优学习总结</title>
+    <link href="https://feng19.com/2019/08/08/Erlang-%E8%B0%83%E4%BC%98%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/"/>
+    <id>https://feng19.com/2019/08/08/Erlang-%E8%B0%83%E4%BC%98%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/</id>
+    <published>2019-08-08T09:30:00.000Z</published>
+    <updated>2022-07-11T09:50:31.877Z</updated>
+    
+    <summary type="html">
+    
+      &lt;p&gt;关于erlang的一些调优收集&lt;/p&gt;
+&lt;p&gt;以及个人的调优学习总结&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="erlang" scheme="https://feng19.com/categories/erlang/"/>
+    
+    
+      <category term="erlang tuning_guide" scheme="https://feng19.com/tags/erlang-tuning-guide/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>游戏协议事件分发路由设计</title>
+    <link href="https://feng19.com/2019/07/31/%E6%B8%B8%E6%88%8F%E5%8D%8F%E8%AE%AE%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91%E8%B7%AF%E7%94%B1%E8%AE%BE%E8%AE%A1/"/>
+    <id>https://feng19.com/2019/07/31/%E6%B8%B8%E6%88%8F%E5%8D%8F%E8%AE%AE%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91%E8%B7%AF%E7%94%B1%E8%AE%BE%E8%AE%A1/</id>
+    <published>2019-07-31T09:50:00.000Z</published>
+    <updated>2022-07-11T09:50:31.877Z</updated>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h2&gt;&lt;p&gt;协议的选型上不多说,用&lt;code&gt;Protobuf&lt;/code&gt;,关于如何选型,可以参考下面这个系列文章:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://my.oschina.net/u/1859679/blog/842513&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;游戏开发—协议设计&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://my.oschina.net/u/1859679/blog/852362&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;游戏开发-协议设计-protobuf&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://my.oschina.net/u/1859679/blog/857307&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;游戏开发-协议-protobuf原理详解&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;本文探讨的是基于&lt;code&gt;Protobuf&lt;/code&gt;上如何做协议事件分发路由设计,预备知识可以参考:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://colobu.com/2015/01/07/Protobuf-language-guide/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Protobuf 语法指南&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://colobu.com/2017/03/16/Protobuf3-language-guide/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Protobuf3 语法指南&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;版本选择建议选择: &lt;code&gt;Protobuf3&lt;/code&gt;&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="other" scheme="https://feng19.com/categories/other/"/>
+    
+    
+      <category term="erlang" scheme="https://feng19.com/tags/erlang/"/>
+    
+      <category term="protobuf design" scheme="https://feng19.com/tags/protobuf-design/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>rebar3 插件 rebar3_reloader 使用</title>
+    <link href="https://feng19.com/2019/03/14/rebar3_reloader_usage/"/>
+    <id>https://feng19.com/2019/03/14/rebar3_reloader_usage/</id>
+    <published>2019-03-14T15:10:40.000Z</published>
+    <updated>2022-07-11T09:50:31.877Z</updated>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Github: &lt;a href=&quot;https://github.com/feng19/rebar3_reloader&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;rebar3_reloader&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;一个能帮助你在编辑完代码之后自动编译并加载代码的 &lt;code&gt;rebar3&lt;/code&gt; 插件,受 &lt;a href=&quot;https://github.com/vans163/rebar3_auto&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;&lt;code&gt;rebar3_auto&lt;/code&gt;&lt;/a&gt; 激发而来.&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="rebar3" scheme="https://feng19.com/categories/rebar3/"/>
+    
+    
+      <category term="erlang" scheme="https://feng19.com/tags/erlang/"/>
+    
+      <category term="rebar3" scheme="https://feng19.com/tags/rebar3/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>sf_transform 使用指南</title>
+    <link href="https://feng19.com/2019/03/03/sf_transform_usage/"/>
+    <id>https://feng19.com/2019/03/03/sf_transform_usage/</id>
+    <published>2019-03-03T09:45:00.000Z</published>
+    <updated>2022-07-11T09:50:31.877Z</updated>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;2022-07-07-更新&quot;&gt;&lt;a href=&quot;#2022-07-07-更新&quot; class=&quot;headerlink&quot; title=&quot;2022.07.07 更新&quot;&gt;&lt;/a&gt;2022.07.07 更新&lt;/h2&gt;&lt;p&gt;非常感谢 @haoxian 的提醒，&lt;code&gt;sf_transform&lt;/code&gt; 的解决方案终于可以落幕了&lt;/p&gt;
+&lt;p&gt;有了新的原生解决方案, 仅需要在 &lt;code&gt;rebar.config&lt;/code&gt; 的 &lt;code&gt;erl_opts&lt;/code&gt; 配置项加入 &lt;code&gt;deterministic&lt;/code&gt; 即可：&lt;/p&gt;
+&lt;figure class=&quot;highlight erlang&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&amp;#123;erl_opts, [&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  deterministic&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;]&amp;#125;.&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+
+&lt;p&gt;亦可以通过环境变量来配置：&lt;/p&gt;
+&lt;figure class=&quot;highlight shell&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;ERL_COMPILER_OPTIONS=&quot;[deterministic]&quot; rebar3 compile&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://www.erlang.org/doc/man/compile.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;官方文档&lt;/a&gt; 中 &lt;code&gt;deterministic&lt;/code&gt; 的解析如下：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Omit the &lt;code&gt;options&lt;/code&gt; and &lt;code&gt;source&lt;/code&gt; tuples in the list returned by &lt;code&gt;Module:module_info(compile)&lt;/code&gt;, and reduce the paths in stack traces to the module name alone. This option will make it easier to achieve reproducible builds.&lt;/p&gt;
+&lt;/blockquote&gt;
+    
+    </summary>
+    
+    
+      <category term="rebar3" scheme="https://feng19.com/categories/rebar3/"/>
+    
+    
+      <category term="erlang" scheme="https://feng19.com/tags/erlang/"/>
+    
+      <category term="rebar3" scheme="https://feng19.com/tags/rebar3/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>erlang程序调试浅析</title>
+    <link href="https://feng19.com/2019/01/22/erlang%E7%A8%8B%E5%BA%8F%E8%B0%83%E8%AF%95%E6%B5%85%E6%9E%90/"/>
+    <id>https://feng19.com/2019/01/22/erlang%E7%A8%8B%E5%BA%8F%E8%B0%83%E8%AF%95%E6%B5%85%E6%9E%90/</id>
+    <published>2019-01-22T15:10:00.000Z</published>
+    <updated>2022-07-11T09:50:31.877Z</updated>
+    
+    <summary type="html">
+    
+      &lt;p&gt;程序调试，俗称 debug&lt;/p&gt;
+&lt;p&gt;一个程序员基本 80% 的时间都在 debug&lt;/p&gt;
+&lt;p&gt;这是一个很恐怖的比例,我们也不得不去面对&lt;/p&gt;
+&lt;p&gt;为了减少这个比例,学好调试方法就变得很重要,可以很大程度上提高开发效率&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="erlang" scheme="https://feng19.com/categories/erlang/"/>
+    
+    
+      <category term="erlang" scheme="https://feng19.com/tags/erlang/"/>
+    
+      <category term="trace" scheme="https://feng19.com/tags/trace/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>给rebar3命令增加shell下自动补全</title>
+    <link href="https://feng19.com/2019/01/16/%E7%BB%99rebar3%E5%91%BD%E4%BB%A4%E5%A2%9E%E5%8A%A0shell%E4%B8%8B%E8%87%AA%E5%8A%A8%E8%A1%A5%E5%85%A8/"/>
+    <id>https://feng19.com/2019/01/16/%E7%BB%99rebar3%E5%91%BD%E4%BB%A4%E5%A2%9E%E5%8A%A0shell%E4%B8%8B%E8%87%AA%E5%8A%A8%E8%A1%A5%E5%85%A8/</id>
+    <published>2019-01-16T07:30:00.000Z</published>
+    <updated>2022-07-11T09:50:31.877Z</updated>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h2&gt;&lt;p&gt;有时候习惯了 &lt;code&gt;shell&lt;/code&gt; 下面使用自动补全功能, 会发现这个功能减少了使用的学习成本, 另外还大大增加了效率, 平时我们在进行&lt;code&gt;erlang&lt;/code&gt;开始时候,会用到&lt;code&gt;rebar3&lt;/code&gt;构建工具,但是这个工具没有提供自动安装自动补全的命令, 只能自己去手动安装.&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="rebar3" scheme="https://feng19.com/categories/rebar3/"/>
+    
+    
+      <category term="erlang" scheme="https://feng19.com/tags/erlang/"/>
+    
+      <category term="rebar3" scheme="https://feng19.com/tags/rebar3/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>erlang-solutions-国内镜像地址</title>
+    <link href="https://feng19.com/2018/04/08/erlang-solutions-%E5%9B%BD%E5%86%85%E9%95%9C%E5%83%8F%E5%9C%B0%E5%9D%80/"/>
+    <id>https://feng19.com/2018/04/08/erlang-solutions-%E5%9B%BD%E5%86%85%E9%95%9C%E5%83%8F%E5%9C%B0%E5%9D%80/</id>
+    <published>2018-04-08T08:00:00.000Z</published>
+    <updated>2022-07-11T09:50:31.877Z</updated>
+    
+    <summary type="html">
+    
+      &lt;p&gt;有部分开发erlang的同学都是用&lt;a href=&quot;https://www.erlang-solutions.com/resources/download.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;erlang-solutions&lt;/a&gt;网站提供的erlang来安装的吧&lt;br&gt;但是在国内用这个站点的仓库地址网速烂到爆,只能用配合梯子来使用&lt;br&gt;偶然的机遇,我发现&lt;a href=&quot;https://mirrors.tuna.tsinghua.edu.cn&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;清华大学开源软件镜像站&lt;/a&gt;也有做这个站点的仓库的镜像,&lt;a href=&quot;https://mirrors.tuna.tsinghua.edu.cn/erlang-solutions/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;地址&lt;/a&gt;&lt;br&gt;哈哈,以后不用一升级erlang就皱眉了&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="erlang" scheme="https://feng19.com/categories/erlang/"/>
+    
+    
+      <category term="erlang" scheme="https://feng19.com/tags/erlang/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Erlang 发布持续集成流程-1</title>
+    <link href="https://feng19.com/2017/10/14/Erlang%20%E5%8F%91%E5%B8%83%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E6%B5%81%E7%A8%8B-1/"/>
+    <id>https://feng19.com/2017/10/14/Erlang%20%E5%8F%91%E5%B8%83%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E6%B5%81%E7%A8%8B-1/</id>
+    <published>2017-10-14T08:30:00.000Z</published>
+    <updated>2022-07-11T09:50:31.877Z</updated>
+    
+    <summary type="html">
+    
+      &lt;h1 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h1&gt;&lt;h2 id=&quot;持续集成介绍&quot;&gt;&lt;a href=&quot;#持续集成介绍&quot; class=&quot;headerlink&quot; title=&quot;持续集成介绍&quot;&gt;&lt;/a&gt;持续集成介绍&lt;/h2&gt;&lt;p&gt;我比较懒,这里我就不介绍了,直接贴连接:&lt;a href=&quot;http://www.ruanyifeng.com/blog/2015/09/continuous-integration.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;持续集成是什么？&lt;/a&gt;&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Erlang-Release-CI" scheme="https://feng19.com/categories/Erlang-Release-CI/"/>
+    
+    
+      <category term="erlang" scheme="https://feng19.com/tags/erlang/"/>
+    
+      <category term="release upgrade" scheme="https://feng19.com/tags/release-upgrade/"/>
+    
+      <category term="CI" scheme="https://feng19.com/tags/CI/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Erlang 发布版本升级-7 sys模块</title>
+    <link href="https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-7%20sys%E6%A8%A1%E5%9D%97/"/>
+    <id>https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-7%20sys%E6%A8%A1%E5%9D%97/</id>
+    <published>2017-09-30T16:00:07.000Z</published>
+    <updated>2022-07-11T09:50:31.877Z</updated>
+    
+    <summary type="html">
+    
+      &lt;p&gt;《Erlang 发布版本升级》 系列第七篇 - sys模块&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Erlang-Release-Upgrade" scheme="https://feng19.com/categories/Erlang-Release-Upgrade/"/>
+    
+    
+      <category term="erlang" scheme="https://feng19.com/tags/erlang/"/>
+    
+      <category term="release upgrade" scheme="https://feng19.com/tags/release-upgrade/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Erlang 发布版本升级-6 升级模块与进程</title>
+    <link href="https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-6%20%E5%8D%87%E7%BA%A7%E6%A8%A1%E5%9D%97%E4%B8%8E%E8%BF%9B%E7%A8%8B/"/>
+    <id>https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-6%20%E5%8D%87%E7%BA%A7%E6%A8%A1%E5%9D%97%E4%B8%8E%E8%BF%9B%E7%A8%8B/</id>
+    <published>2017-09-30T16:00:06.000Z</published>
+    <updated>2022-07-11T09:50:31.877Z</updated>
+    
+    <summary type="html">
+    
+      &lt;p&gt;《Erlang 发布版本升级》 系列第六篇 - 升级模块与进程&lt;/p&gt;
+&lt;p&gt;或许有些同学会很容易搞混,在升级中到底是升级进程还是升级代码模块.&lt;/p&gt;
+&lt;p&gt;答案显然是肯定的,升级代码模块,而我们说的升级进程,只是在需要同步升级进程内部状态的时候才需要,而同步更新也是先加载更新新的代码模块,然后再通知进程执行内部状态的转变.&lt;/p&gt;
+&lt;p&gt;只是,我们都知道我们appup里面只有提到模块,里面并没有提及到进程,而我们都知道进程的标示pid,都是动态的,而我们在做同步代码热更的时候,是怎么将模块与进程管理起来的呢?下面我带大家从源码中找出答案.&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Erlang-Release-Upgrade" scheme="https://feng19.com/categories/Erlang-Release-Upgrade/"/>
+    
+    
+      <category term="erlang" scheme="https://feng19.com/tags/erlang/"/>
+    
+      <category term="release upgrade" scheme="https://feng19.com/tags/release-upgrade/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Erlang 发布版本升级-5 supervisor更新说明</title>
+    <link href="https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-5%20supervisor%E6%9B%B4%E6%96%B0%E8%AF%B4%E6%98%8E/"/>
+    <id>https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-5%20supervisor%E6%9B%B4%E6%96%B0%E8%AF%B4%E6%98%8E/</id>
+    <published>2017-09-30T16:00:05.000Z</published>
+    <updated>2022-07-11T09:50:31.877Z</updated>
+    
+    <summary type="html">
+    
+      &lt;p&gt;《Erlang 发布版本升级》 系列第五篇 - supervisor更新说明&lt;/p&gt;
+&lt;p&gt;supervisor在我们热更中起到至关重要,而且设计到的内容比较多,需要注意的事项也很多,所以这里特别开了一个章节来说.&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Erlang-Release-Upgrade" scheme="https://feng19.com/categories/Erlang-Release-Upgrade/"/>
+    
+    
+      <category term="erlang" scheme="https://feng19.com/tags/erlang/"/>
+    
+      <category term="release upgrade" scheme="https://feng19.com/tags/release-upgrade/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Erlang 发布版本升级-4 升级指令讲解</title>
+    <link href="https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-4%20%E5%8D%87%E7%BA%A7%E6%8C%87%E4%BB%A4%E8%AE%B2%E8%A7%A3/"/>
+    <id>https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-4%20%E5%8D%87%E7%BA%A7%E6%8C%87%E4%BB%A4%E8%AE%B2%E8%A7%A3/</id>
+    <published>2017-09-30T16:00:04.000Z</published>
+    <updated>2022-07-11T09:50:31.877Z</updated>
+    
+    <summary type="html">
+    
+      &lt;p&gt;《Erlang 发布版本升级》 系列第四篇 - 升级指令讲解&lt;/p&gt;
+&lt;p&gt;插件虽然能帮助我们很方便的生成appup文件,但是如果你想要在升级的时候执行一下你的升级mnesia的record数据结构方法,插件不能分析出来我们要做这个的.&lt;/p&gt;
+&lt;p&gt;所以插件只能帮我们做其中一部分工作而已,另外一部分需要我们自己去处理,因此我们也需要对appup里面的指令进行进一步的学习.&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Erlang-Release-Upgrade" scheme="https://feng19.com/categories/Erlang-Release-Upgrade/"/>
+    
+    
+      <category term="erlang" scheme="https://feng19.com/tags/erlang/"/>
+    
+      <category term="release upgrade" scheme="https://feng19.com/tags/release-upgrade/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Erlang 发布版本升级-3 升级发布版本工具讲解</title>
+    <link href="https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-3%20%E5%8D%87%E7%BA%A7%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%B7%A5%E5%85%B7%E8%AE%B2%E8%A7%A3/"/>
+    <id>https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-3%20%E5%8D%87%E7%BA%A7%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%B7%A5%E5%85%B7%E8%AE%B2%E8%A7%A3/</id>
+    <published>2017-09-30T16:00:03.000Z</published>
+    <updated>2022-07-11T09:50:31.877Z</updated>
+    
+    <summary type="html">
+    
+      &lt;p&gt;《Erlang 发布版本升级》 系列第三篇 - 升级发布版本工具讲解&lt;/p&gt;
+&lt;p&gt;为了不加班,所以程序员一般都会开发一些便捷的工具来提高开发效率,下面就让我来给大家讲讲升级发布版本工具:&lt;a href=&quot;https://github.com/lrascao/rebar3_appup_plugin&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;rebar3_appup_plugin&lt;/a&gt;&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Erlang-Release-Upgrade" scheme="https://feng19.com/categories/Erlang-Release-Upgrade/"/>
+    
+    
+      <category term="erlang" scheme="https://feng19.com/tags/erlang/"/>
+    
+      <category term="release upgrade" scheme="https://feng19.com/tags/release-upgrade/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Erlang 发布版本升级-2 gen_server热更</title>
+    <link href="https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-2%20gen_server%E7%83%AD%E6%9B%B4/"/>
+    <id>https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-2%20gen_server%E7%83%AD%E6%9B%B4/</id>
+    <published>2017-09-30T16:00:02.000Z</published>
+    <updated>2022-07-11T09:50:31.877Z</updated>
+    
+    <summary type="html">
+    
+      &lt;p&gt;《Erlang 发布版本升级》 系列第二篇 - gen_server热更&lt;/p&gt;
+&lt;p&gt;OTP的&lt;code&gt;gen_server&lt;/code&gt;模块,我想应该是大家在&lt;code&gt;erlang&lt;/code&gt;开发中接触最多的模块了,但是我们经常会碰到要修改内部状态(&lt;code&gt;state&lt;/code&gt;)的时候,例如原来的&lt;code&gt;state&lt;/code&gt;不再适用于新的需求,需要改变&lt;code&gt;state&lt;/code&gt;的数据结构,增加或者减少一个字段&lt;/p&gt;
+&lt;p&gt;遇到这样情况之后,我想很大一部分同学都会选择关闭这个进程,然后加载新代码,然后再开启这个进程,但是面对运行中的环境,要做这个操作只能重启&lt;code&gt;vm&lt;/code&gt;了&lt;/p&gt;
+&lt;p&gt;其实我们并不需要重启&lt;code&gt;vm&lt;/code&gt;,只需要多动动手指敲多几行代码就能完成这个代码的热更了&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Erlang-Release-Upgrade" scheme="https://feng19.com/categories/Erlang-Release-Upgrade/"/>
+    
+    
+      <category term="erlang" scheme="https://feng19.com/tags/erlang/"/>
+    
+      <category term="release upgrade" scheme="https://feng19.com/tags/release-upgrade/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Erlang 发布版本升级-1 代码热更简介</title>
+    <link href="https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-1%20%E4%BB%A3%E7%A0%81%E7%83%AD%E6%9B%B4/"/>
+    <id>https://feng19.com/2017/09/30/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-1%20%E4%BB%A3%E7%A0%81%E7%83%AD%E6%9B%B4/</id>
+    <published>2017-09-30T16:00:00.000Z</published>
+    <updated>2022-07-11T09:50:31.877Z</updated>
+    
+    <summary type="html">
+    
+      &lt;p&gt;《Erlang 发布版本升级》 系列第一篇 - 代码热更简介&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Erlang-Release-Upgrade" scheme="https://feng19.com/categories/Erlang-Release-Upgrade/"/>
+    
+    
+      <category term="erlang" scheme="https://feng19.com/tags/erlang/"/>
+    
+      <category term="release upgrade" scheme="https://feng19.com/tags/release-upgrade/"/>
+    
+  </entry>
+  
+</feed>

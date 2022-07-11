@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"feng19.com","root":"/","scheme":"Mist","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="前言在国内，腾讯的社交网络及其强大，其社交生态也是百花齐放，而微信是其王牌中的王牌。 Elixir，继承了 Erlang 的衣钵，使用 Ruby 的皮肤，再加上强大的社区，开发出了众多神器，让这个小众语言在全球开始遍地开花。 为结合两者，因此有了此文。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Elixir 微信(WeChat) SDK 使用指南">
+<meta property="og:url" content="https://feng19.com/2022/07/08/wechat_for_elixir_usage/">
+<meta property="og:site_name" content="在路上">
+<meta property="og:description" content="前言在国内，腾讯的社交网络及其强大，其社交生态也是百花齐放，而微信是其王牌中的王牌。 Elixir，继承了 Erlang 的衣钵，使用 Ruby 的皮肤，再加上强大的社区，开发出了众多神器，让这个小众语言在全球开始遍地开花。 为结合两者，因此有了此文。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-07-08T07:30:00.000Z">
+<meta property="article:modified_time" content="2022-07-11T09:50:31.877Z">
+<meta property="article:author" content="feng19">
+<meta property="article:tag" content="elixir">
+<meta property="article:tag" content="wechat">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://feng19.com/2022/07/08/wechat_for_elixir_usage/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Elixir 微信(WeChat) SDK 使用指南 | 在路上</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?8f25ec0a3f57bade10cde5125c9425d2";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="在路上" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line toggle-line-first"></span>
+        <span class="toggle-line toggle-line-middle"></span>
+        <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">在路上</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">On the road!</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#背景知识"><span class="nav-number">1.1.</span> <span class="nav-text">背景知识</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Elixir-知识"><span class="nav-number">1.1.1.</span> <span class="nav-text">Elixir 知识</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#微信开发知识"><span class="nav-number">1.1.2.</span> <span class="nav-text">微信开发知识</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#微信公众号"><span class="nav-number">1.2.</span> <span class="nav-text">微信公众号</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#公众号介绍"><span class="nav-number">1.2.1.</span> <span class="nav-text">公众号介绍</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#WeChat-SDK-介绍"><span class="nav-number">1.2.2.</span> <span class="nav-text">WeChat SDK 介绍</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#阅读指引"><span class="nav-number">1.3.</span> <span class="nav-text">阅读指引</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SDK-安装及使用"><span class="nav-number">2.</span> <span class="nav-text">SDK 安装及使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Access-token"><span class="nav-number">2.1.</span> <span class="nav-text">Access token</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装-WeChat-SDK"><span class="nav-number">2.2.</span> <span class="nav-text">安装 WeChat SDK</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#定义-client-模块"><span class="nav-number">2.3.</span> <span class="nav-text">定义 client 模块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置-Access-token-自动刷新器"><span class="nav-number">2.4.</span> <span class="nav-text">配置 Access token 自动刷新器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#接口调用"><span class="nav-number">2.5.</span> <span class="nav-text">接口调用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#中控服务器-Hub-调用-APIs-场景"><span class="nav-number">3.</span> <span class="nav-text">中控服务器(Hub)调用 APIs 场景</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ServerRole-服务器角色"><span class="nav-number">3.1.</span> <span class="nav-text">ServerRole (服务器角色)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Storage-Access-token-存储器"><span class="nav-number">3.2.</span> <span class="nav-text">Storage (Access token 存储器)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置"><span class="nav-number">3.3.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Hub"><span class="nav-number">3.4.</span> <span class="nav-text">Hub</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HubClient"><span class="nav-number">3.5.</span> <span class="nav-text">HubClient</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试"><span class="nav-number">3.6.</span> <span class="nav-text">测试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#网页授权"><span class="nav-number">4.</span> <span class="nav-text">网页授权</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#配置-1"><span class="nav-number">4.1.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Hub-跳板"><span class="nav-number">4.2.</span> <span class="nav-text">Hub 跳板</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JS-SDK-设置"><span class="nav-number">5.</span> <span class="nav-text">JS SDK 设置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#微信推送消息接受和处理"><span class="nav-number">6.</span> <span class="nav-text">微信推送消息接受和处理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#后记"><span class="nav-number">7.</span> <span class="nav-text">后记</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="feng19"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">feng19</p>
+  <div class="site-description" itemprop="description">程序路上 成长路上 梦想路上</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/feng19" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;feng19" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:feng_19@foxmail.com" title="E-Mail → mailto:feng_19@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://feng19.com/2022/07/08/wechat_for_elixir_usage/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="feng19">
+      <meta itemprop="description" content="程序路上 成长路上 梦想路上">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="在路上">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Elixir 微信(WeChat) SDK 使用指南
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-07-08 15:30:00" itemprop="dateCreated datePublished" datetime="2022-07-08T15:30:00+08:00">2022-07-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 17:50:31" itemprop="dateModified" datetime="2022-07-11T17:50:31+08:00">2022-07-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/wechat/" itemprop="url" rel="index"><span itemprop="name">wechat</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2022/07/08/wechat_for_elixir_usage/" class="post-meta-item leancloud_visitors" data-flag-title="Elixir 微信(WeChat) SDK 使用指南" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2022/07/08/wechat_for_elixir_usage/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2022/07/08/wechat_for_elixir_usage/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在国内，腾讯的社交网络及其强大，其社交生态也是百花齐放，而微信是其王牌中的王牌。</p>
+<p>Elixir，继承了 Erlang 的衣钵，使用 Ruby 的皮肤，再加上强大的社区，开发出了众多神器，让这个小众语言在全球开始遍地开花。</p>
+<p>为结合两者，因此有了此文。</p>
+<a id="more"></a>
+
+<h3 id="背景知识"><a href="#背景知识" class="headerlink" title="背景知识"></a>背景知识</h3><p>阅读本文前，您需要有一定的背景知识</p>
+<h4 id="Elixir-知识"><a href="#Elixir-知识" class="headerlink" title="Elixir 知识"></a>Elixir 知识</h4><ul>
+<li><p><a href="https://elixir-lang.org/getting-started/basic-types.html" target="_blank" rel="noopener">Elixir 基础语法</a></p>
+</li>
+<li><p><a href="https://hexdocs.pm/phoenix/overview.html" target="_blank" rel="noopener">了解 Phoenix</a></p>
+</li>
+</ul>
+<h4 id="微信开发知识"><a href="#微信开发知识" class="headerlink" title="微信开发知识"></a>微信开发知识</h4><ul>
+<li><a href="https://developers.weixin.qq.com/doc/offiaccount/Getting_Started/Overview.html" target="_blank" rel="noopener">微信公众平台开发概述 | 微信开放文档</a></li>
+<li><a href="https://developers.weixin.qq.com/doc/offiaccount/Getting_Started/Getting_Started_Guide.html" target="_blank" rel="noopener">公众号开发指引 | 微信开放文档</a></li>
+</ul>
+<p>本文是假定读者有一定 elixir &amp; Phoenix 基础的前提下进行编写的，如没有，可以阅读上面的连接进行补充。</p>
+<h3 id="微信公众号"><a href="#微信公众号" class="headerlink" title="微信公众号"></a>微信公众号</h3><h4 id="公众号介绍"><a href="#公众号介绍" class="headerlink" title="公众号介绍"></a>公众号介绍</h4><p>我们日常使用的公众号分为两种: </p>
+<ul>
+<li><p><a href="https://kf.qq.com/faq/120911VrYVrA150918fMZ77R.html?scene_id=kf3386" target="_blank" rel="noopener">服务号</a></p>
+<blockquote>
+<p>为企业和组织提供更强大的业务服务与用户管理能力，主要偏向服务类交互（功能类似12315，114，银行，提供绑定信息，服务交互的）；</p>
+<p>适用人群：媒体、企业、政府或其他组织。</p>
+<p>群发次数：服务号1个月（按自然月）内可发送4条群发消息。</p>
+</blockquote>
+</li>
+<li><p><a href="https://kf.qq.com/faq/120911VrYVrA15091832Qzqq.html?scene_id=kf3384" target="_blank" rel="noopener">订阅号</a></p>
+<blockquote>
+<p>为媒体和个人提供一种新的信息传播方式，主要功能是在微信侧给用户传达资讯；（功能类似报纸杂志，提供新闻信息或娱乐趣事）</p>
+<p>适用人群：个人、媒体、企业、政府或其他组织。</p>
+<p>群发次数：订阅号（认证用户、非认证用户）1天内可群发1条消息。</p>
+</blockquote>
+</li>
+</ul>
+<p>两者在接口上大体上基本相同，主要是两者群发消息的次数不一样，另外有部分接口权限有细微区别，在微信客户端显示上服务号和订阅号会有比较大的区别，订阅号 是折叠在【订阅号消息】功能里面，而 服务号 是一个独立项。</p>
+<h4 id="WeChat-SDK-介绍"><a href="#WeChat-SDK-介绍" class="headerlink" title="WeChat SDK 介绍"></a>WeChat SDK 介绍</h4><p>Elixir 的 <a href="https://github.com/feng19/wechat" target="_blank" rel="noopener">WeChat SDK</a> 目前已在 Github 上 开源，SDK 除了对公众号的支持外，还支持其他微信生态的产品</p>
+<ul>
+<li><a href="https://developers.weixin.qq.com/doc/offiaccount/Getting_Started/Overview.html" target="_blank" rel="noopener">公众号</a></li>
+<li><a href="https://developers.weixin.qq.com/miniprogram/dev/framework/" target="_blank" rel="noopener">小程序</a></li>
+<li><a href="https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/getting_started/how_to_read.html" target="_blank" rel="noopener">第三方应用</a></li>
+<li><a href="https://developer.work.weixin.qq.com/document/path/90556" target="_blank" rel="noopener">企业微信</a></li>
+<li><a href="https://pay.weixin.qq.com/wiki/doc/apiv3/index.shtml" target="_blank" rel="noopener">微信支付</a> - WIP</li>
+</ul>
+<p>本文仅限讨论【公众号】开发，其余功能请前往 <a href="https://hex.pm/packages/wechat_sdk" target="_blank" rel="noopener">SDK 文档</a> 阅读</p>
+<h3 id="阅读指引"><a href="#阅读指引" class="headerlink" title="阅读指引"></a>阅读指引</h3><p>因文章篇幅有限，本文只讲解了以下几个侧重点：</p>
+<ul>
+<li><p>SDK 安装及使用</p>
+</li>
+<li><p>中控服务器(Hub)模式</p>
+</li>
+<li><p>网页授权</p>
+</li>
+<li><p>JS SDK 设置</p>
+</li>
+<li><p>微信推送消息接受和处理</p>
+</li>
+</ul>
+<p>在开始之前，你还需要准备一个测试号</p>
+<p>开通方式：<a href="https://developers.weixin.qq.com/doc/offiaccount/Basic_Information/Requesting_an_API_Test_Account.html" target="_blank" rel="noopener">申请公众号测试号</a></p>
+<p>本文配套 demo 代码在此: <a href="https://github.com/feng19/wechat_demo" target="_blank" rel="noopener">Github</a></p>
+<h2 id="SDK-安装及使用"><a href="#SDK-安装及使用" class="headerlink" title="SDK 安装及使用"></a>SDK 安装及使用</h2><h3 id="Access-token"><a href="#Access-token" class="headerlink" title="Access token"></a>Access token</h3><p>微信的公众平台与目前大部分开放平台的 API 设计思路一致，每个接口都需要附带 <code>Access token</code> 来进行鉴权，<code>Access token</code> 是公众号接口调用的凭据，因此在调用接口前需要先 <a href="https://developers.weixin.qq.com/doc/offiaccount/Basic_Information/Get_access_token.html" target="_blank" rel="noopener">获取 Access token</a></p>
+<blockquote>
+<p>公众平台的 API 调用所需的 <code>access_token</code> 的使用及生成方式说明：</p>
+<p>1、建议公众号开发者使用中控服务器统一获取和刷新 <code>access_token</code>，其他业务逻辑服务器所使用的 <code>access_token</code> 均来自于该中控服务器，不应该各自去刷新，否则容易造成冲突，导致 <code>access_token</code> 覆盖而影响业务；</p>
+<p>2、目前 <code>access_token</code> 的有效期通过返回的 <code>expires_in</code> 来传达，目前是<code>7200</code> 秒之内的值。中控服务器需要根据这个有效时间提前去刷新新 <code>access_token</code>。在刷新过程中，中控服务器可对外继续输出的老 <code>access_token</code>，此时公众平台后台会保证在5分钟内，新老 <code>access_token</code> 都可用，这保证了第三方业务的平滑过渡；</p>
+<p>3、<code>access_token</code> 的有效时间可能会在未来有调整，所以中控服务器不仅需要内部定时主动刷新，还需要提供被动刷新 <code>access_token</code> 的接口，这样便于业务服务器在 API 调用获知 <code>access_token</code> 已超时的情况下，可以触发 <code>access_token</code> 的刷新流程。</p>
+<p>公众号和小程序均可以使用 <code>AppID</code> 和 <code>AppSecret</code> 调用本接口来获取 <code>access_token</code>。</p>
+<p><code>AppID</code> 和 <code>AppSecret</code> 可在“微信公众平台 - 开发 - 基本配置”页中获得（需要已经成为开发者，且帐号没有异常状态）。</p>
+</blockquote>
+<p>从官方的说明中，界定出以下两种使用场景</p>
+<ul>
+<li><p>本地调用微信 APIs： 单一调用方</p>
+</li>
+<li><p>中控服务器调用 APIs：多方同时调用</p>
+</li>
+</ul>
+<p>实际中的使用场景多为 【多方同时调用】 接口，而因为 <code>access_token</code> 的获取和刷新是覆盖的，如果在多方并发调用的情况下同时刷新，会导致前面拿到的 <code>access_token</code> 失效，而导致接口请求失败，所以需要中控服务器来统一管理 获取和刷新 <code>access_token</code>。</p>
+<p>但为了简单起见，在此先从【本地调用微信 APIs】场景开始，后续再循序渐进，讲述【中控服务器调用 APIs】场景。</p>
+<h3 id="安装-WeChat-SDK"><a href="#安装-WeChat-SDK" class="headerlink" title="安装 WeChat SDK"></a>安装 WeChat SDK</h3><p>首先，安装 SDK，如果是已有项目，在 <code>mix.exs</code> 文件中加入依赖：</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">deps</span></span> <span class="keyword">do</span></span><br><span class="line">  [</span><br><span class="line">    &#123;<span class="symbol">:wechat</span>, <span class="string">"~&gt; 0.10"</span>, <span class="symbol">hex:</span> <span class="symbol">:wechat_sdk</span>&#125;</span><br><span class="line">  ]</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>在此我们走一遍从 0 到 1 的过程，从创建新项目开始</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mix phx.new wechat_demo --no-ecto --no-gettext --no-dashboard --no-mailer</span><br></pre></td></tr></table></figure>
+
+<p>项目创建完成之后，在 <code>mix.exs</code> 文件中加入依赖：</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">deps</span></span> <span class="keyword">do</span></span><br><span class="line">  [</span><br><span class="line">    &#123;<span class="symbol">:saxy</span>, <span class="string">"~&gt; 1.4"</span>&#125;,</span><br><span class="line">    &#123;<span class="symbol">:wechat</span>, <span class="string">"~&gt; 0.10"</span>, <span class="symbol">hex:</span> <span class="symbol">:wechat_sdk</span>&#125;</span><br><span class="line">  ]</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>这里添加了两个依赖库 <code>wechat_sdk</code> 和 <code>saxy</code> 依赖，在后续的 【<a href="#微信推送消息接受和处理">微信推送消息的接受和处理</a>】章节中，微信推送过来的消息是 xml 格式的，因此需要用到 <code>saxy</code> 库进行解析。</p>
+</blockquote>
+<p>修改好之后执行: <code>mix deps.get</code> 下载新依赖</p>
+<h3 id="定义-client-模块"><a href="#定义-client-模块" class="headerlink" title="定义 client 模块"></a>定义 client 模块</h3><p>首先需要初始化 SDK 的 client 模块，新建一个 <code>WeChatDemo.Demo</code> 模块：</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">defmodule</span> <span class="title">WeChatDemo.Demo</span></span> <span class="keyword">do</span></span><br><span class="line">  <span class="variable">@moduledoc</span> <span class="string">"demo"</span></span><br><span class="line">  <span class="keyword">use</span> WeChat,</span><br><span class="line">    <span class="symbol">appid:</span> <span class="string">"wx552588fc9207632d"</span>, <span class="regexp">//</span> 填入你的 appID</span><br><span class="line">    <span class="symbol">appsecret:</span> <span class="string">"your-appsecret"</span> /<span class="regexp">/ 填入你的 appsecret</span></span><br><span class="line"><span class="regexp">end</span></span><br></pre></td></tr></table></figure>
+
+<p>获取 <code>Access token</code> 接口需要用到两个参数：<code>appID</code> 和 <code>appsecret</code></p>
+<p>测试号在 <a href="https://mp.weixin.qq.com/debug/cgi-bin/sandboxinfo?action=showinfo&t=sandbox/index" target="_blank" rel="noopener">测试号管理</a> 页面中查看，正常的公众号请阅读 <a href="https://developers.weixin.qq.com/doc/offiaccount/Getting_Started/Getting_Started_Guide.html#_1-4-%E5%BC%80%E5%8F%91%E8%80%85%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE" target="_blank" rel="noopener">官方指引文档</a>。</p>
+<p>定义 <code>client</code> 模块之后，可以使用两种调用方式:  </p>
+<p>以 <a href="https://developers.weixin.qq.com/doc/offiaccount/User_Management/Get_users_basic_information_UnionID.html#UinonId" target="_blank" rel="noopener">获取用户信息</a> 接口 为例</p>
+<ul>
+<li><p>调用 <code>client</code> 模块方法: <code>WeChatDemo.Demo.User.user_info(openid)</code>  </p>
+</li>
+<li><p>原生调用方法: <code>WeChat.User.user_info(WeChatDemo.Demo, openid)</code></p>
+</li>
+</ul>
+<p>两种方式的返回值是一致的， <code>WeChatDemo.Demo</code> 模块在编译期间会将所有接口模块编译为自己的子模块，并将每个函数中的 <code>client</code> 参数去掉，第一种方式在使用上比第二种便捷，会产生子模块但并无不良副作用，推荐使用第一种方式。</p>
+<blockquote>
+<p>可以通过查看模块 <code>WeChat.Builder.OfficialAccount</code> 中的 <code>@both_modules</code> 和 <code>@official_account_modules</code> 了解子模块列表</p>
+<p>如代码中不使用第一种方式，且不希望生成子模块，可以在 <code>use WeChat</code> 时设置 <code>gen_sub_module?: false</code></p>
+</blockquote>
+<h3 id="配置-Access-token-自动刷新器"><a href="#配置-Access-token-自动刷新器" class="headerlink" title="配置 Access token 自动刷新器"></a>配置 Access token 自动刷新器</h3><p>完成 <code>client</code> 模块定义之后，直接调用模块，会发现接口报错: <code>access_token is invalid</code> 无效的 <code>Access token</code>，因为还缺少了一步：激活 <code>Access token</code> 自动刷新器，请在配置文件 <code>config.exs</code> 中添加:  </p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">config <span class="symbol">:wechat</span>, <span class="symbol">:refresh_settings</span>, [WeChatDemo.Demo]</span><br></pre></td></tr></table></figure>
+
+<p>重新编译 <code>mix compile</code> ，运行  <code>iex -S mix phx.server</code> 启动应用</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[info] Refresh appid: wx552588fc9207632d, key: access_token succeed, get expires_in: 7200s.</span><br><span class="line">[info] Start Refresh Timer for appid: wx552588fc9207632d, key: access_token, time: 5400000s.</span><br></pre></td></tr></table></figure>
+
+<p>看到上面的日志输出，表示刷新器已运行正常</p>
+<h3 id="接口调用"><a href="#接口调用" class="headerlink" title="接口调用"></a>接口调用</h3><p>下面来试试接口调用，还是以 <a href="https://developers.weixin.qq.com/doc/offiaccount/User_Management/Get_users_basic_information_UnionID.html#UinonId" target="_blank" rel="noopener">获取用户信息</a> 接口来举例</p>
+<p>在 <a href="https://mp.weixin.qq.com/debug/cgi-bin/sandboxinfo?action=showinfo&t=sandbox/index" target="_blank" rel="noopener">测试号管理</a> 页面中 - 测试号二维码 一栏可以找到你的 <code>openid</code></p>
+<blockquote>
+<p>OpenID</p>
+<p>在关注者与公众号产生消息交互后，公众号可获得关注者的 OpenID（加密后的微信号，每个用户对每个公众号的 OpenID 是唯一的。对于不同公众号，同一用户的 openid 不同）</p>
+<p>引用自 <a href="https://developers.weixin.qq.com/doc/offiaccount/User_Management/Get_users_basic_information_UnionID.html#UinonId" target="_blank" rel="noopener">link</a></p>
+</blockquote>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">iex(<span class="number">1</span>)&gt; WeChatDemo.Demo.User.user_info(<span class="string">"oWP97uGZgZRks50Q7pwRRDIOrLdA"</span>)</span><br><span class="line">&#123;<span class="symbol">:ok</span>,</span><br><span class="line"> %Tesla.Env&#123;</span><br><span class="line">   <span class="symbol">__client__:</span> %Tesla.Client&#123;<span class="symbol">adapter:</span> <span class="keyword">nil</span>, <span class="symbol">fun:</span> <span class="keyword">nil</span>, <span class="symbol">post:</span> [], <span class="symbol">pre:</span> []&#125;,</span><br><span class="line">   <span class="symbol">__module__:</span> WeChat.Requester.OfficialAccount,</span><br><span class="line">   <span class="symbol">body:</span> %&#123;</span><br><span class="line">     <span class="string">"city"</span> =&gt; <span class="string">""</span>,</span><br><span class="line">     <span class="string">"country"</span> =&gt; <span class="string">",</span></span><br><span class="line"><span class="string">     "</span>groupid<span class="string">" =&gt; 0,</span></span><br><span class="line"><span class="string">     "</span>headimgurl<span class="string">" =&gt; "</span><span class="string">",</span></span><br><span class="line"><span class="string">     "</span>language<span class="string">" =&gt; "</span>zh_CN<span class="string">",</span></span><br><span class="line"><span class="string">     "</span>nickname<span class="string">" =&gt; "</span><span class="string">",</span></span><br><span class="line"><span class="string">     "</span>openid<span class="string">" =&gt; "</span>oWP97uGZgZRks50Q7pwRRDIOrLdA<span class="string">",</span></span><br><span class="line"><span class="string">     "</span>province<span class="string">" =&gt; "</span><span class="string">",</span></span><br><span class="line"><span class="string">     "</span>qr_scene<span class="string">" =&gt; 0,</span></span><br><span class="line"><span class="string">     "</span>qr_scene_str<span class="string">" =&gt; "</span><span class="string">",</span></span><br><span class="line"><span class="string">     "</span>remark<span class="string">" =&gt; "</span><span class="string">",</span></span><br><span class="line"><span class="string">     "</span>sex<span class="string">" =&gt; 0,</span></span><br><span class="line"><span class="string">     "</span>subscribe<span class="string">" =&gt; 1,</span></span><br><span class="line"><span class="string">     "</span>subscribe_scene<span class="string">" =&gt; "</span>ADD_SCENE_QR_CODE<span class="string">",</span></span><br><span class="line"><span class="string">     "</span>subscribe_time<span class="string">" =&gt; 1570788299,</span></span><br><span class="line"><span class="string">     "</span>tagid_list<span class="string">" =&gt; []</span></span><br><span class="line"><span class="string">   &#125;,</span></span><br><span class="line"><span class="string">   headers: [</span></span><br><span class="line"><span class="string">     &#123;"</span>connection<span class="string">", "</span>keep-alive<span class="string">"&#125;,</span></span><br><span class="line"><span class="string">     &#123;"</span>content-type<span class="string">", "</span>application/json; encoding=utf<span class="number">-8</span><span class="string">"&#125;,</span></span><br><span class="line"><span class="string">     &#123;"</span>date<span class="string">", "</span>Fri, 08 Jul <span class="number">2022 15</span><span class="symbol">:</span><span class="number">15:37</span> GMT<span class="string">"&#125;,</span></span><br><span class="line"><span class="string">     &#123;"</span>content-length<span class="string">", "</span><span class="number">286</span><span class="string">"&#125;</span></span><br><span class="line"><span class="string">   ],</span></span><br><span class="line"><span class="string">   method: :get,</span></span><br><span class="line"><span class="string">   opts: [],</span></span><br><span class="line"><span class="string">   query: [</span></span><br><span class="line"><span class="string">     openid: "</span>oWP97uGZgZRks50Q7pwRRDIOrLdA<span class="string">",</span></span><br><span class="line"><span class="string">     access_token: "</span><span class="number">58_</span>lJTMRIhYm-PpB0jpNQw79DhUrmKeHe3Ac-EoZIpaWRkooZnM3HSUukM1w1lAxQckoW<span class="number">-3</span>sA9Hol6fvlBmEx95Jb84brTvJS_Ey53-bhECnMj2uHPdr3b7jjMZRMKMj3aJVxp_yE9UAdXPaamNETCgAFAJYH<span class="string">"</span></span><br><span class="line"><span class="string">   ],</span></span><br><span class="line"><span class="string">   status: 200,</span></span><br><span class="line"><span class="string">   url: "</span><span class="symbol">https:</span>/<span class="regexp">/api.weixin.qq.com/cgi</span>-bin/user/info<span class="string">"</span></span><br><span class="line"><span class="string"> &#125;&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>所有 API 的接口返回值类型为 <a href="https://hexdocs.pm/wechat_sdk/WeChat.html#t:response/0" target="_blank" rel="noopener">Wechat.response/0</a></p>
+<p>轻松三步，搞定微信接口开发！</p>
+<p>以上是【本地调用微信 APIs】 场景的内容，接下来会比较复杂一点</p>
+<h2 id="中控服务器-Hub-调用-APIs-场景"><a href="#中控服务器-Hub-调用-APIs-场景" class="headerlink" title="中控服务器(Hub)调用 APIs 场景"></a>中控服务器(Hub)调用 APIs 场景</h2><p>要实现中控功能，并让一份代码同时支持多种场景，可以通过在 <code>use WeChat</code> 模块时根据不同的场景设置不同的 <code>server_role</code> (服务器角色) 和 <code>storage</code>(<code>Access token</code> 存储器) :</p>
+<h3 id="ServerRole-服务器角色"><a href="#ServerRole-服务器角色" class="headerlink" title="ServerRole (服务器角色)"></a>ServerRole (服务器角色)</h3><ul>
+<li><code>:client</code>: 默认，主动刷新 <code>Access token</code> </li>
+<li><code>:hub</code>: 中控服务器，主动刷新 <code>Access token</code> </li>
+<li><code>:hub_client</code>: 逻辑服务器，从 <code>hub</code> 获取 <code>Access token</code></li>
+</ul>
+<h3 id="Storage-Access-token-存储器"><a href="#Storage-Access-token-存储器" class="headerlink" title="Storage (Access token 存储器)"></a>Storage (Access token 存储器)</h3><p>作用：在 <code>Access token</code> 刷新器每次完成刷新之后，会通过 <code>storage</code> 保存 <code>Access token</code> ，当 <code>Access token</code> 刷新器启动的时会从 <code>storage</code> 读取保存的 <code>Access token</code> 以快速启动。</p>
+<ul>
+<li><p>storage 如不填，则默认值为: <code>WeChat.Storage.File</code> ，将 <code>Access token</code> 保存在 <code>json</code> 文件中；</p>
+</li>
+<li><p><code>WeChat.Storage.HttpForHubClient</code> 通过 http 从 Hub 中获取 <code>Access token</code> ；</p>
+</li>
+<li><p>如果以上两种存储器并不适用你的情况的话，可以通过实行 <code>WeChat.Storage.Adapter</code> 来自定义存储器。</p>
+</li>
+</ul>
+<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><p>修改 <code>WeChatDemo.Demo</code> 模块，配置 <code>server_role</code> &amp; <code>storage</code> :</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">defmodule</span> <span class="title">WeChatDemo.Demo</span></span> <span class="keyword">do</span></span><br><span class="line">  <span class="variable">@moduledoc</span> <span class="string">"demo"</span></span><br><span class="line">  <span class="keyword">use</span> WeChat,</span><br><span class="line">    <span class="symbol">appid:</span> <span class="string">"wx552588fc9207632d"</span>, <span class="regexp">//</span> 填入你的 appID</span><br><span class="line">    <span class="symbol">appsecret:</span> <span class="string">"your-appsecret"</span>, <span class="regexp">//</span> 填入你的 appsecret</span><br><span class="line">    <span class="symbol">server_role:</span> Application.get_env(<span class="symbol">:wechat</span>, <span class="symbol">:server_role</span>, <span class="symbol">:hub</span>),</span><br><span class="line">    <span class="symbol">storage:</span> Application.get_env(<span class="symbol">:wechat</span>, <span class="symbol">:storage</span>, WeChat.Storage.File)</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>对于线上服务器， <code>server_role</code> 需要设为 <code>:hub</code> , 且使用 <code>WeChat.Storage.File</code> 作为 <code>storage</code>(存储器)；</p>
+<p>作为  中控服务器(Hub)，主要的功能为两点</p>
+<ol>
+<li><p>统一刷新 <code>Access token</code></p>
+</li>
+<li><p>为 <code>hub_client</code> 提供 <code>Access token</code></p>
+</li>
+<li><p>接受微信消息推送</p>
+</li>
+</ol>
+<h3 id="Hub"><a href="#Hub" class="headerlink" title="Hub"></a>Hub</h3><p>为 <code>hub_client</code> 提供 <code>Access token</code>，需要提供一个安全的接口，示例为简单起见，使用 <code>BasicAuth</code> 方式鉴权，修改 <code>router.exs</code> 增加 <code>/hub/expose/:store_id/:store_key</code> 接口</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">if Application.compile_env(<span class="symbol">:wechat</span>, <span class="symbol">:server_role</span>) == <span class="symbol">:hub</span> <span class="keyword">do</span></span><br><span class="line">  pipeline <span class="symbol">:exposer_auth</span> <span class="keyword">do</span></span><br><span class="line">    <span class="keyword">import</span> Plug.BasicAuth, <span class="symbol">warn:</span> <span class="keyword">false</span></span><br><span class="line"></span><br><span class="line">    opts =</span><br><span class="line">      Application.compile_env(<span class="symbol">:wechat</span>, WeChat.Storage.HttpForHubClient)</span><br><span class="line">      |&gt; Keyword.take([<span class="symbol">:username</span>, <span class="symbol">:password</span>])</span><br><span class="line"></span><br><span class="line">    plug <span class="symbol">:basic_auth</span>, opts</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  scope <span class="string">"/hub/expose"</span>, WeChat.Plug <span class="keyword">do</span></span><br><span class="line">    pipe_through <span class="symbol">:exposer_auth</span></span><br><span class="line">    get <span class="string">"/:store_id/:store_key"</span>, HubExposer, <span class="symbol">clients:</span> [WeChatDemo.Demo]</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意</strong> 示例使用的 <code>BasicAuth</code> 并不能保护接口的安全，线上服务器请使用更加安全合规的方式鉴权。</p>
+<h3 id="HubClient"><a href="#HubClient" class="headerlink" title="HubClient"></a>HubClient</h3><p>对于开发环境或者测试环境，<code>server_role</code> 需要设为 <code>:hub_client</code>， <code>storage</code> 需要设为 <code>WeChat.Storage.HttpForHubClient</code>, 修改 <code>dev.exs</code></p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">config <span class="symbol">:wechat</span>,</span><br><span class="line">  <span class="symbol">server_role:</span> <span class="symbol">:hub_client</span>,</span><br><span class="line">  <span class="symbol">storage:</span> WeChat.Storage.HttpForHubClient</span><br></pre></td></tr></table></figure>
+
+<p> <code>hub_client</code> 模式下，刷新器通过 <code>WeChat.Storage.HttpForHubClient</code> 存储器从 <code>hub</code> 提供的 <code>HTTP</code> 接口中获取 <code>Access token</code> ，且不再调用存储器的存储方法。</p>
+<p>因此还需要告知 <code>WeChat.Storage.HttpForHubClient</code> 存储器 <code>hub</code> 的 <code>HTTP</code> 接口路径，修改 <code>config.exs</code></p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">host = <span class="string">"https://wx.example.com"</span></span><br><span class="line">config <span class="symbol">:wechat</span>, WeChat.Storage.HttpForHubClient,</span><br><span class="line">  <span class="symbol">hub_base_url:</span> <span class="string">"<span class="subst">#&#123;host&#125;</span>/hub/expose"</span>,</span><br><span class="line">  <span class="symbol">username:</span> <span class="string">"hello"</span>,</span><br><span class="line">  <span class="symbol">password:</span> <span class="string">"000999"</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><p>完成上述修改之后，将程序打包并部署到服务器，然后在服务器上测试接口</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">iex(<span class="number">1</span>)&gt; WeChatDemo.Demo.User.user_info(<span class="string">"oWP97uGZgZRks50Q7pwRRDIOrLdA"</span>)</span><br><span class="line">&#123;<span class="symbol">:ok</span>, ...&#125;</span><br></pre></td></tr></table></figure>
+
+<p>服务器环境下调用接口正常，接下来再看看本地开发环境，运行 <code>iex -S mix phx.server</code> 启动应用，测试接口</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">iex(<span class="number">1</span>)&gt; WeChatDemo.Demo.User.user_info(<span class="string">"oWP97uGZgZRks50Q7pwRRDIOrLdA"</span>)</span><br><span class="line">&#123;<span class="symbol">:ok</span>, ...&#125;</span><br></pre></td></tr></table></figure>
+
+<p>You did it, Good job！</p>
+<p>可以试试通过 <a href="https://hexdocs.pm/wechat_sdk/WeChat.CustomMessage.html#send_text/3" target="_blank" rel="noopener">消息发送接口</a> 给自己发送一条文本消息.</p>
+<p><strong>注意</strong> 微信为了限制公众号恶意发送消息骚扰用户，所以有一些限制才能调用消息发送接口，具体请看<a href="https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Service_Center_messages.html" target="_blank" rel="noopener">官方文档</a>。</p>
+<h2 id="网页授权"><a href="#网页授权" class="headerlink" title="网页授权"></a>网页授权</h2><blockquote>
+<p>如果用户在微信客户端中访问第三方网页，公众号可以通过微信网页授权机制，来获取用户基本信息，进而实现业务逻辑。</p>
+<p>引用自 <a href="https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/Wechat_webpage_authorization.html" target="_blank" rel="noopener">官方文档</a></p>
+</blockquote>
+<p>在开始之前，需要先设置 网页授权回调域名</p>
+<blockquote>
+<p>关于网页授权回调域名的说明</p>
+<ol>
+<li>在微信公众号请求用户网页授权之前，开发者需要先到公众平台官网中的“开发 - 接口权限 - 网页服务 - 网页帐号 - 网页授权获取用户基本信息”的配置选项中，修改授权回调域名。请注意，这里填写的是域名（是一个字符串），而不是URL，因此请勿加 http:// 等协议头；</li>
+<li>授权回调域名配置规范为全域名，比如需要网页授权的域名为：<a href="http://www.qq.com，配置以后此域名下面的页面http://www.qq.com/music.html" target="_blank" rel="noopener">www.qq.com，配置以后此域名下面的页面http://www.qq.com/music.html</a> 、 <a href="http://www.qq.com/login.html" target="_blank" rel="noopener">http://www.qq.com/login.html</a> 都可以进行OAuth2.0鉴权。但<a href="http://pay.qq.com" target="_blank" rel="noopener">http://pay.qq.com</a> 、 <a href="http://music.qq.com" target="_blank" rel="noopener">http://music.qq.com</a> 、 <a href="http://qq.com" target="_blank" rel="noopener">http://qq.com</a> 无法进行OAuth2.0鉴权</li>
+<li>如果公众号登录授权给了第三方开发者来进行管理，则不必做任何设置，由第三方代替公众号实现网页授权即可</li>
+</ol>
+<p>引用自 <a href="https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/Wechat_webpage_authorization.html" target="_blank" rel="noopener">官方文档</a></p>
+</blockquote>
+<p>在 <a href="https://mp.weixin.qq.com/debug/cgi-bin/sandboxinfo?action=showinfo&t=sandbox/index" target="_blank" rel="noopener">测试号管理</a> 页面中 -&gt; 体验接口权限表 -&gt; 网页服务 -&gt; 网页帐号-&gt; 网页授权获取用户基本信息 -&gt; 点击修改 -&gt; 授权回调页面域名 -&gt; 把服务器 IP 或者 域名填入即可。</p>
+<h3 id="配置-1"><a href="#配置-1" class="headerlink" title="配置"></a>配置</h3><p>在 <code>router.exs</code> 增加一个 <code>oauth2_checker</code> pipeline，并应用到需要使用 网页授权 的路由规则上:</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">pipeline <span class="symbol">:oauth2_checker</span> <span class="keyword">do</span></span><br><span class="line">  plug WeChat.Plug.OAuth2Checker, <span class="symbol">clients:</span> [WeChatDemo.Demo]</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">scope <span class="string">"/hello/:app"</span> <span class="keyword">do</span></span><br><span class="line">  pipe_through <span class="symbol">:oauth2_checker</span></span><br><span class="line">  get <span class="string">"/"</span>, PageController, <span class="symbol">:index</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>在路径 <code>&quot;/hello/:app&quot;</code> 中的 <code>:app</code> , 可以是</p>
+<ul>
+<li><p><code>code_name</code> = <code>demo</code></p>
+</li>
+<li><p><code>appid</code> = <code>wx552588fc9207632d</code></p>
+</li>
+</ul>
+<blockquote>
+<p>code_name: 可以在定义是设置 client 的 code_name, 如果没有设置，默认为模块名最后一个名称的全小写格式。</p>
+</blockquote>
+<p>因为有<code>WeChat.Plug.OAuth2Checker</code> 的检测，只有授权成功的才能访问到页面，<code>page_controller.ex</code> 被调用时可以用 <code>OAuth2Checker</code> 设置的 <code>session</code> 来获取用户信息:</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">defmodule</span> <span class="title">WeChatDemoWeb.PageController</span></span> <span class="keyword">do</span></span><br><span class="line">  <span class="keyword">use</span> WeChatDemoWeb, <span class="symbol">:controller</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">index</span></span>(conn, _params) <span class="keyword">do</span></span><br><span class="line">    appid = get_session(conn, <span class="string">"appid"</span>)</span><br><span class="line">    info = get_session(conn, <span class="string">"access_info"</span>) |&gt; inspect()</span><br><span class="line">    render(conn, <span class="string">"index.html"</span>, <span class="symbol">appid:</span> appid, <span class="symbol">info:</span> info)</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>设置好之后打包部署到服务器</p>
+<ol>
+<li><p>访问 <code>/wx/demo</code> or <code>/hello/wx552588fc9207632d</code>；</p>
+</li>
+<li><p>连接转跳到微信的授权页；</p>
+</li>
+<li><p>用户的授权；</p>
+</li>
+<li><p>微信在用户的授权完成之后，跳转回原路径，并带上一个参数 <code>code</code>；</p>
+</li>
+<li><p>通过这个参数获取到用户的一些信息， 完成网页授权。</p>
+</li>
+</ol>
+<h3 id="Hub-跳板"><a href="#Hub-跳板" class="headerlink" title="Hub 跳板"></a>Hub 跳板</h3><p>上面的配置虽然完成了功能开发，但是实际使用中，会发现有两点问题</p>
+<ul>
+<li><p>无法在开发环境使用网页授权</p>
+</li>
+<li><p>无法在其他域名或者请他服务器上使用网页授权</p>
+</li>
+</ul>
+<p>有以上需求可以使用 <code>WeChat.Plug.HubSpringboard</code> 模块</p>
+<p>在 hub 服务器上增加一条用于跳转的路由规则</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">get <span class="string">"/wx/:app/:env/cb/*callback_path"</span>, WeChat.Plug.HubSpringboard, <span class="symbol">clients:</span> [WeChatDemo.Demo]</span><br></pre></td></tr></table></figure>
+
+<p>修改 <code>config.exs</code></p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">host = <span class="string">"https://wx.example.com"</span></span><br><span class="line">oauth2_envcallbacks = %&#123;<span class="string">"dev"</span> =&gt; <span class="string">"http://127.0.0.1:4000"</span>&#125;</span><br><span class="line"></span><br><span class="line">config <span class="symbol">:wechat</span>, <span class="symbol">clients:</span> %&#123;</span><br><span class="line">  WeChatDemo.Demo =&gt; [</span><br><span class="line">    <span class="symbol">hub_springboard_url:</span> <span class="string">"<span class="subst">#&#123;host&#125;</span>/wx/:app/:env/cb/"</span>,</span><br><span class="line">    <span class="symbol">oauth2_callbacks:</span> oauth2_env_callbacks</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>设置 <code>hub_springboard_url</code> 告知 <code>hub_client</code> 跳转到 中控服务器的地址；</p>
+<p>设置 <code>oauth2_env_callbacks</code> 告知 <code>hub</code> 有哪些环境。</p>
+<p>设置好之后打包部署到服务器</p>
+<ol>
+<li><p>访问本地 <code>/wx/demo</code> or <code>/hello/wx552588fc9207632d</code>；</p>
+</li>
+<li><p>连接转跳到微信的授权页，但 callback 地址为 hub 的跳转路由；</p>
+</li>
+<li><p>用户的授权；</p>
+</li>
+<li><p>微信在用户的授权完成之后，跳转 hub 的跳转路由；</p>
+</li>
+<li><p>跳转路由根据 <code>client</code> &amp; <code>env</code> 获取 回调地址；</p>
+</li>
+<li><p>跳回原路径，并带上一个参数 <code>code</code>；</p>
+</li>
+<li><p>通过这个参数获取到用户的一些信息， 完成网页授权。</p>
+</li>
+</ol>
+<p><code>env</code> 默认为 <code>dev</code>，如果环境有多个，可以在对应的环境设置，如 QA 环境</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">config <span class="symbol">:wechat</span>, <span class="symbol">:env</span>, <span class="symbol">:qa</span></span><br><span class="line"></span><br><span class="line">oauth2_env_callbacks = %&#123;</span><br><span class="line">  <span class="string">"dev"</span> =&gt; <span class="string">"http://127.0.0.1:4000"</span>,</span><br><span class="line">  <span class="string">"qa"</span> =&gt; <span class="string">"http://wx.qa.example.com"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="JS-SDK-设置"><a href="#JS-SDK-设置" class="headerlink" title="JS SDK 设置"></a>JS SDK 设置</h2><blockquote>
+<p>微信 JS-SDK 是 <a href="https://mp.weixin.qq.com/cgi-bin/loginpage?t=wxm2-login&lang=zh_CN" target="_blank" rel="noopener">微信公众平台</a> 面向网页开发者提供的基于微信内的网页开发工具包。</p>
+<p>通过使用微信 JS-SDK，网页开发者可借助微信高效地使用拍照、选图、语音、位置等手机系统的能力，同时可以直接使用微信分享、扫一扫、卡券、支付等微信特有的能力，为微信用户提供更优质的网页体验。</p>
+<p>此文档面向网页开发者介绍微信 JS-SDK 如何使用及相关注意事项。</p>
+<p>引用自 <a href="https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/JS-SDK.html#4" target="_blank" rel="noopener">设置指南</a></p>
+</blockquote>
+<p>在开始之前，需要先设置 JS接口安全域名，因为微信限制，JS-SDK 仅能在指定的安全域名使能。</p>
+<p>在 <a href="https://mp.weixin.qq.com/debug/cgi-bin/sandboxinfo?action=showinfo&t=sandbox/index" target="_blank" rel="noopener">测试号管理</a> 页面中 -&gt; JS接口安全域名 -&gt; 点击修改 -&gt; 填入域名： <code>https://wx.example.com</code></p>
+<p>通过 config 接口注入权限验证配置：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">wx.config(&#123;</span><br><span class="line">  debug: <span class="literal">true</span>, <span class="comment">// 开启调试模式,调用的所有 api 的返回值会在客户端 alert 出来，若要查看传入的参数，可以在 pc 端打开，参数信息会通过 log 打出，仅在 pc 端时才会打印。</span></span><br><span class="line">  appId: <span class="string">''</span>, <span class="comment">// 必填，公众号的唯一标识</span></span><br><span class="line">  timestamp: , <span class="comment">// 必填，生成签名的时间戳</span></span><br><span class="line">  nonceStr: <span class="string">''</span>, <span class="comment">// 必填，生成签名的随机串</span></span><br><span class="line">  signature: <span class="string">''</span>,<span class="comment">// 必填，签名</span></span><br><span class="line">  jsApiList: [] <span class="comment">// 必填，需要使用的 JS 接口列表</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>Setup 参数有 5 个必填项，其中，<code>jsApiList</code> 根据业务需要填写即可，<br>其余 4 个参数可以通过接口 <a href="https://hexdocs.pm/wechat_sdk/WeChat.WebPage.html#js_sdk_config/2" target="_blank" rel="noopener">WeChat.WebPage.js_sdk_config/2</a> 生成，然后传递到前端页面，使用 <code>wx.config</code> 注入配置，完成之后，就可以正常使用 <code>JS-SDK</code> 了。</p>
+<h2 id="微信推送消息接受和处理"><a href="#微信推送消息接受和处理" class="headerlink" title="微信推送消息接受和处理"></a>微信推送消息接受和处理</h2><p>当用户发送消息到公众号时，微信服务器会调用设置的 WebHook，把用户发送的消息传递到 Webhook，请阅读 <a href="https://developers.weixin.qq.com/doc/offiaccount/Basic_Information/Access_Overview.html" target="_blank" rel="noopener">接入指南</a>。</p>
+<p>在开始之前，需要先设置 【接口配置信息】，在 <a href="https://mp.weixin.qq.com/debug/cgi-bin/sandboxinfo?action=showinfo&t=sandbox/index" target="_blank" rel="noopener">测试号管理</a> 页面中 -&gt; 接口配置信息 -&gt; 修改：</p>
+<ul>
+<li>填入 URL： <code>https://wx.example.com/wx/event</code></li>
+<li>填入 Token：<code>FakEmGXMZg1nxm273F7a</code>（此处填写随机生成的一个 token 即可）</li>
+<li>正式环境还需要填入 <code>encoding_aes_key</code>，测试号因为是用明文模块过来的，并不涉及到解密 xml，因此忽略即可</li>
+<li>定义 <code>client</code> 模块时必须设置对应的: <code>encoding_aes_key</code> &amp; <code>token</code> 值</li>
+</ul>
+<p>修改 <code>WeChatDemo.Demo</code> 模块，增加 <code>appsecret</code> &amp; <code>token</code></p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">defmodule</span> <span class="title">WeChatDemo.Demo</span></span> <span class="keyword">do</span></span><br><span class="line">  <span class="variable">@moduledoc</span> <span class="string">"demo"</span></span><br><span class="line">  <span class="keyword">use</span> WeChat,</span><br><span class="line">    <span class="symbol">appid:</span> <span class="string">"wx552588fc9207632d"</span>, <span class="regexp">//</span> 填入你的 appID</span><br><span class="line">    <span class="symbol">appsecret:</span> <span class="string">"your-appsecret"</span>, <span class="regexp">//</span> 填入你的 appsecret</span><br><span class="line">    <span class="symbol">token:</span> <span class="string">"FakEmGXMZg1nxm273F7a"</span> /<span class="regexp">/ 填入你的 token</span></span><br><span class="line"><span class="regexp">end</span></span><br></pre></td></tr></table></figure>
+
+<p>修改 <code>router.exs</code>， 增加消息 WebHook 路由规则</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">forward <span class="string">"/wx/event"</span>, WeChat.Plug.EventHandler,</span><br><span class="line">  <span class="symbol">client:</span> WeChatDemo.Demo,</span><br><span class="line">  <span class="symbol">event_handler:</span> &amp;WeChatDemo.WeChatEvent.handle_event/<span class="number">3</span></span><br></pre></td></tr></table></figure>
+
+<p><code>event_handler</code> 的值为 3 参数的函数，详细请阅读: <a href="https://hexdocs.pm/wechat_sdk/WeChat.Plug.EventHandler.html#t:event_handler/0" target="_blank" rel="noopener">函数定义</a></p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">defmodule</span> <span class="title">WeChatDemo.WeChatEvent</span></span> <span class="keyword">do</span></span><br><span class="line">  <span class="keyword">require</span> Logger</span><br><span class="line">  <span class="keyword">import</span> WeChat.Utils, <span class="symbol">only:</span> [<span class="symbol">now_unix:</span> 0]</span><br><span class="line">  <span class="keyword">alias</span> WeChat.ServerMessage.XmlMessage</span><br><span class="line"></span><br><span class="line">  <span class="comment"># 处理 公众号 &amp; 小程序 推送消息</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">handle_event</span></span>(_conn, client, message) <span class="keyword">do</span></span><br><span class="line">    Logger.info(<span class="string">"client: <span class="subst">#&#123;inspect(client)&#125;</span> get message: <span class="subst">#&#123;inspect(message)&#125;</span>"</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> message <span class="keyword">do</span></span><br><span class="line">      <span class="comment"># 文本消息</span></span><br><span class="line">      %&#123;<span class="string">"MsgType"</span> =&gt; <span class="string">"text"</span>&#125; -&gt;</span><br><span class="line">        openid = message[<span class="string">"FromUserName"</span>]</span><br><span class="line">        timestamp = now_unix()</span><br><span class="line"></span><br><span class="line">        reply_text =</span><br><span class="line">          <span class="keyword">case</span> message[<span class="string">"Content"</span>] <span class="keyword">do</span></span><br><span class="line">            <span class="string">"openid"</span> -&gt;</span><br><span class="line">              openid</span><br><span class="line"></span><br><span class="line">            _ -&gt;</span><br><span class="line">              <span class="string">"Hello!"</span></span><br><span class="line">          <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">        reply_msg = XmlMessage.reply_text(openid, message[<span class="string">"ToUserName"</span>], timestamp, reply_text)</span><br><span class="line"></span><br><span class="line">        &#123;<span class="symbol">:reply</span>, reply_msg, timestamp&#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment"># 订阅消息</span></span><br><span class="line">      %&#123;<span class="string">"MsgType"</span> =&gt; <span class="string">"event"</span>, <span class="string">"Event"</span> =&gt; <span class="string">"subscribe"</span>&#125; -&gt;</span><br><span class="line">        timestamp = now_unix()</span><br><span class="line"></span><br><span class="line">        reply_msg =</span><br><span class="line">          XmlMessage.reply_text(</span><br><span class="line">            message[<span class="string">"FromUserName"</span>],</span><br><span class="line">            message[<span class="string">"ToUserName"</span>],</span><br><span class="line">            timestamp,</span><br><span class="line">            <span class="string">"非常感谢您的订阅关注"</span></span><br><span class="line">          )</span><br><span class="line"></span><br><span class="line">        &#123;<span class="symbol">:reply</span>, reply_msg, timestamp&#125;</span><br><span class="line"></span><br><span class="line">      _ -&gt;</span><br><span class="line">        <span class="symbol">:ignore</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>当服务器接收到微信推送的消息后，SDK 会先 decode xml，然后调用 <code>event_handler</code> 回调函数, 上面的代码实现以下逻辑：</p>
+<ul>
+<li><p>收到 【文本消息】，如果内容是 <code>openid</code> , 返回当前用户 <code>OpenID</code> 的值，其他情况 返回文本消息 <code>Hello!</code></p>
+</li>
+<li><p>收到 【关注订阅消息】，返回文本消息 <code>非常感谢您的订阅关注</code></p>
+</li>
+</ul>
+<p>将上面修改好之后，将代码部署到服务器上，然后扫描 【测试号管理】页面的二维码 进入 测试公众号，发送测试消息: “1”，服务器收到之后打印如下日志：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">09:54:34.060 request_id&#x3D;FwCjiY4DLbmKhfsAAScx [info] POST &#x2F;wx&#x2F;event</span><br><span class="line">09:54:34.061 request_id&#x3D;FwCjiY4DLbmKhfsAAScx [info] client: WeChatDemo.Demo get message: %&#123;&quot;Content&quot; &#x3D;&gt; &quot;1&quot;, &quot;CreateTime&quot; &#x3D;&gt; &quot;1657504472&quot;, &quot;FromUserName&quot; &#x3D;&gt; &quot;occpC65S9o5FR8WXOt7cLVVRa-bI&quot;, &quot;MsgId&quot; &#x3D;&gt; &quot;23729756606043028&quot;, &quot;MsgType&quot; &#x3D;&gt; &quot;text&quot;, &quot;ToUserName&quot; &#x3D;&gt; &quot;gh_e88a0414dbdf&quot;&#125;</span><br><span class="line">09:54:34.061 request_id&#x3D;FwCjiY4DLbmKhfsAAScx [info] Sent 200 in 501µs</span><br></pre></td></tr></table></figure>
+
+<p>接入完成！！！</p>
+<h2 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h2><p>Erlang/Elixir 虽然是小众语言，但并不代表其语言能力有问题，每种语言都有其适用范围和人群，撰写此文也是想为 Elixir 社区贡献一份力量，希望对观看的你有所帮助，如果错误，请不吝指正，感谢！</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>梦想基金</div>
+  <button onclick="document.getElementById('post-reward').classList.toggle('active');">
+    赞赏
+  </button>
+  <div id="post-reward">
+      
+      <div>
+        <img src="/images/wechatpay.png" alt="feng19 微信">
+        <p>微信</p>
+      </div>
+      
+      <div>
+        <img src="/images/alipay.png" alt="feng19 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/elixir/" rel="tag"># elixir</a>
+              <a href="/tags/wechat/" rel="tag"># wechat</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2019/08/22/%E5%88%A9%E7%94%A8%E7%A0%81%E4%BA%91%E9%95%9C%E5%83%8F%E5%8A%A0%E9%80%9Fkerl/" rel="next" title="利用码云镜像加速kerl">
+      利用码云镜像加速kerl <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="http://www.beian.miit.gov.cn/" rel="noopener" target="_blank">粤ICP备20060017号 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">feng19</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"VDj7hFAA8eL6I5UmENlytJhh-gzGzoHsz","app_key":"AOi8dJU8VtxgAuyaPcplC9lP","server_url":null,"security":true};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://feng19.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "https://feng19.com/2022/07/08/wechat_for_elixir_usage/";
+    this.page.identifier = "2022/07/08/wechat_for_elixir_usage/";
+    this.page.title = "Elixir 微信(WeChat) SDK 使用指南";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://feng19.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>
