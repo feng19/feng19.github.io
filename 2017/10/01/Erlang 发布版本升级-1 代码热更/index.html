@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"feng19.com","root":"/","scheme":"Mist","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="《Erlang 发布版本升级》 系列第一篇 - 代码热更简介">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Erlang 发布版本升级-1 代码热更简介">
+<meta property="og:url" content="https://feng19.com/2017/10/01/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-1%20%E4%BB%A3%E7%A0%81%E7%83%AD%E6%9B%B4/">
+<meta property="og:site_name" content="在路上">
+<meta property="og:description" content="《Erlang 发布版本升级》 系列第一篇 - 代码热更简介">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2017-09-30T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-07-08T07:31:29.763Z">
+<meta property="article:author" content="feng19">
+<meta property="article:tag" content="erlang">
+<meta property="article:tag" content="release upgrade">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://feng19.com/2017/10/01/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-1%20%E4%BB%A3%E7%A0%81%E7%83%AD%E6%9B%B4/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Erlang 发布版本升级-1 代码热更简介 | 在路上</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?8f25ec0a3f57bade10cde5125c9425d2";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="在路上" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line toggle-line-first"></span>
+        <span class="toggle-line toggle-line-middle"></span>
+        <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">在路上</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">On the road!</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#代码热更"><span class="nav-number">1.</span> <span class="nav-text">代码热更</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#代码版本"><span class="nav-number">2.</span> <span class="nav-text">代码版本</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#进程代码版本切换"><span class="nav-number">3.</span> <span class="nav-text">进程代码版本切换</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="feng19"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">feng19</p>
+  <div class="site-description" itemprop="description">程序路上 成长路上 梦想路上</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/feng19" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;feng19" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:feng_19@foxmail.com" title="E-Mail → mailto:feng_19@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://feng19.com/2017/10/01/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-1%20%E4%BB%A3%E7%A0%81%E7%83%AD%E6%9B%B4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="feng19">
+      <meta itemprop="description" content="程序路上 成长路上 梦想路上">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="在路上">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Erlang 发布版本升级-1 代码热更简介
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-01 00:00:00" itemprop="dateCreated datePublished" datetime="2017-10-01T00:00:00+08:00">2017-10-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-08 15:31:29" itemprop="dateModified" datetime="2022-07-08T15:31:29+08:00">2022-07-08</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Erlang-Release-Upgrade/" itemprop="url" rel="index"><span itemprop="name">Erlang-Release-Upgrade</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2017/10/01/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-1%20%E4%BB%A3%E7%A0%81%E7%83%AD%E6%9B%B4/" class="post-meta-item leancloud_visitors" data-flag-title="Erlang 发布版本升级-1 代码热更简介" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2017/10/01/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-1%20%E4%BB%A3%E7%A0%81%E7%83%AD%E6%9B%B4/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/10/01/Erlang 发布版本升级-1 代码热更/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>《Erlang 发布版本升级》 系列第一篇 - 代码热更简介</p>
+<a id="more"></a>
+
+<h1 id="代码热更"><a href="#代码热更" class="headerlink" title="代码热更"></a>代码热更</h1><p>下面我们会展示两份代码,分别是版本1和版本2</p>
+<p>test_load.erl (vsn-1):</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">-module</span><span class="params">(test_load)</span>.</span><br><span class="line"><span class="keyword">-export</span><span class="params">([print/<span class="number">0</span>])</span>.</span><br><span class="line"><span class="function"><span class="title">print</span><span class="params">()</span> -&gt;</span></span><br><span class="line">    io:format(<span class="string">"vsn~p~n"</span>, [<span class="number">1</span>]).</span><br></pre></td></tr></table></figure>
+
+<p>test_load.erl (vsn-2):</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">-module</span><span class="params">(test_load)</span>.</span><br><span class="line"><span class="keyword">-export</span><span class="params">([print/<span class="number">0</span>])</span>.</span><br><span class="line"><span class="function"><span class="title">print</span><span class="params">()</span> -&gt;</span></span><br><span class="line">    io:format(<span class="string">"vsn~p~n"</span>, [<span class="number">2</span>]).</span><br></pre></td></tr></table></figure>
+
+<p>两份代码仅有的差别只是打印的版本号不同,下面我们来看看怎么让运行中版本1代码热更到版本2的代码</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">erlc test_load.erl <span class="comment">%% 先编译代码</span></span><br><span class="line">erl <span class="comment">%% 打开eshell</span></span><br><span class="line"><span class="number">1</span>&gt; test_load:print(). // vsn=<span class="number">1</span></span><br><span class="line">vsn1</span><br><span class="line">ok</span><br><span class="line"><span class="number">2</span>&gt; l(test_load). // 先在外部执行erlc test_load.erl编译代码 然后再 加载新代码</span><br><span class="line">&#123;ok,test_load&#125;</span><br><span class="line"><span class="number">3</span>&gt; test_load:print(). // vsn=<span class="number">2</span></span><br><span class="line">vsn2</span><br><span class="line">ok</span><br></pre></td></tr></table></figure>
+
+<p>可以看到,只用通过执行 <code>l(test_load).</code> 就能直接加载新的代码了,很简单对吧,我相信这个知识点大家都懂,因为很多同学在线上紧急修复代码就是这么干的,但是这样做却很容易出问题,而且有很多很多局限性,在以后的章节我们会一起探讨这些问题,现在继续来看看代码版本方面的知识</p>
+<hr>
+<h1 id="代码版本"><a href="#代码版本" class="headerlink" title="代码版本"></a>代码版本</h1><p>先问大家一个简单问题: 在<code>erlang</code>的<code>vm</code>里面,代码模块能同时存在几个版本?</p>
+<p>答案是两个!下面我用实例来演示一遍:</p>
+<p>code_replace.erl (vsn-1):</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">-module</span><span class="params">(code_replace)</span>.</span><br><span class="line"><span class="keyword">-export</span><span class="params">([start/<span class="number">0</span>, loop/<span class="number">0</span>])</span>.</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">start</span><span class="params">()</span> -&gt;</span></span><br><span class="line">    spawn(fun loop/0).</span><br><span class="line"><span class="function"><span class="title">loop</span><span class="params">()</span> -&gt;</span></span><br><span class="line">    <span class="keyword">receive</span></span><br><span class="line">        _ -&gt; loop()</span><br><span class="line">    <span class="keyword">after</span> <span class="number">1500</span> -&gt;</span><br><span class="line">        io:format(<span class="string">"vsn~p~n"</span>, [<span class="number">1</span>]),</span><br><span class="line">        loop()</span><br><span class="line">    <span class="keyword">end</span>.</span><br></pre></td></tr></table></figure>
+
+<p>当前我们有一份代码,这个代码主要工作就是开启一个进程,然后这个进程每隔1.5秒打印一下版本号,我们先启动一下这个进程:</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">erlc code_replace.erl &amp;&amp; erl</span><br><span class="line"><span class="number">1</span>&gt; Pid = code_replace:start(). <span class="comment">%% 开启进程</span></span><br><span class="line">vsn1</span><br><span class="line">vsn1</span><br><span class="line">vsn1</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>可以看到我们的进程运行良好,但是突然我开始讨厌打印1了,我想让它打印2</p>
+<p>code_replace.erl (vsn-2):</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">-module</span><span class="params">(code_replace)</span>.</span><br><span class="line"><span class="keyword">-export</span><span class="params">([start/<span class="number">0</span>, loop/<span class="number">0</span>])</span>.</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">start</span><span class="params">()</span> -&gt;</span></span><br><span class="line">    spawn(fun loop/0).</span><br><span class="line"><span class="function"><span class="title">loop</span><span class="params">()</span> -&gt;</span></span><br><span class="line">    <span class="keyword">receive</span></span><br><span class="line">        _ -&gt; loop()</span><br><span class="line">    <span class="keyword">after</span> <span class="number">1500</span> -&gt;</span><br><span class="line">        io:format(<span class="string">"vsn~p~n"</span>, [<span class="number">2</span>]),  <span class="comment">%% 修改 1 =&gt; 2</span></span><br><span class="line">        loop()</span><br><span class="line">    <span class="keyword">end</span>.</span><br></pre></td></tr></table></figure>
+
+<p>先编译:</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">erlc code_replace.erl</span><br></pre></td></tr></table></figure>
+
+<p>然后加载到<code>vm</code>里:</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">2</span>&gt; l(code_replace).</span><br><span class="line">vsn1</span><br><span class="line">vsn1</span><br><span class="line">vsn1</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>虽然我们加载了新代码,但是我们却看到之前我们开启的进程打印的仍然是<code>1</code>,难道是加载代码失败了吗?我们来再开一个进程看看:</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">3</span>&gt; P2 = code_replace:start().</span><br><span class="line">vsn2</span><br><span class="line">vsn1</span><br><span class="line">vsn2    </span><br><span class="line">vsn1</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>可以看到,代码加载是有效的,而我们之前的进程运行的仍然是旧版本的代码,而新的进程运行的是新版本的代码</p>
+<hr>
+<p>我是个多变的人~ &gt;_ &gt; 突然又不喜欢打印<code>2</code>了,我想让它打印<code>3</code>:</p>
+<p>code_replace.erl (vsn-3):</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">-module</span><span class="params">(code_replace)</span>.</span><br><span class="line"><span class="keyword">-export</span><span class="params">([start/<span class="number">0</span>, loop/<span class="number">0</span>])</span>.</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">start</span><span class="params">()</span> -&gt;</span></span><br><span class="line">    spawn(fun loop/0).</span><br><span class="line"><span class="function"><span class="title">loop</span><span class="params">()</span> -&gt;</span></span><br><span class="line">    <span class="keyword">receive</span></span><br><span class="line">        _ -&gt; loop()</span><br><span class="line">    <span class="keyword">after</span> <span class="number">1500</span> -&gt;</span><br><span class="line">        io:format(<span class="string">"vsn~p~n"</span>, [<span class="number">3</span>]),  <span class="comment">%% 修改 2 =&gt; 3</span></span><br><span class="line">        loop()</span><br><span class="line">    <span class="keyword">end</span>.</span><br></pre></td></tr></table></figure>
+
+<p>然后加载到vm里:</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">erlc code_replace.erl</span><br><span class="line"><span class="number">4</span>&gt; l(code_replace).</span><br><span class="line">vsn2</span><br><span class="line">vsn2</span><br><span class="line">vsn2</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>奇怪的事情发生了</p>
+<p>原来是<code>vsn1</code>和<code>vsn2</code>都会打印出来,但是加载新版本代码之后,<code>vsn1</code>的打印消失了,我们来看看他是不是被<code>kill</code>了</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">5</span>&gt; erlang:is_process_alive(P). <span class="comment">%% false</span></span><br></pre></td></tr></table></figure>
+
+<p>可以看到我们的第一个进程P已经壮烈牺牲了</p>
+<p>接下来,问题就来了,为啥第一个进程死掉了,而第二个进程却还或者呢?</p>
+<p>我们去官方文档看看解析:<a href="http://erlang.org/doc/reference_manual/code_loading.html#id89620" target="_blank" rel="noopener">连接</a></p>
+<blockquote>
+<p>Erlang supports change of code in a running system. Code replacement is done on module level.<br>The code of a module can exist in two variants in a system: <strong>current</strong> and <strong>old</strong>. When a module is loaded into the system for the first time, the code becomes ‘current’. If then a new instance of the module is loaded, the code of the previous instance becomes ‘old’ and the new instance becomes ‘current’.<br>Both old and current code is valid, and can be evaluated concurrently. Fully qualified function calls always refer to current code. Old code can still be evaluated because of processes lingering in the old code.<br>If a third instance of the module is loaded, the code server removes (purges) the old code and any processes lingering in it is terminated. Then the third instance becomes ‘current’ and the previously current code becomes ‘old’.<br>To change from old code to current code, a process must make a fully qualified function call.<br>众所周知, erlang支持运行时的代码更新,代码更新作用在模块级别.每个代码模块允许存在两个版本在系统中:当前和旧两个版本.当一个模块第一次加载进系统时,这个版本视为当前版本.如果有新的模块加载,之前的版本变为旧的版本,然后新的模块变为当前版本.两个版本都是有效的,可以同时运行.全模块调用总是指向当前版本.旧代码仍然起作用是因为进程仍然在使用着旧代码.如果第三个版本模块加载进系统时,系统会清除旧代码和关闭掉那些仍然在使用旧代码的进程.然后第三个版本会变成当前版本代码,第二个版本会变成旧版本代码.进程必须使用全模块调用才能将旧版本模块代码切换到新版本模块代码.</p>
+</blockquote>
+<p>从这里可以看到我们之前进程做的热更其实是很危险的,万一我们热更的时候,有部分进程的驻留模块用的仍然是旧版本的模块代码,就会造成该进程被杀掉,通常在游戏服里面的表现就是全服玩家集体掉线,因为玩家进程的驻留模块还是旧的呀</p>
+<p>那我们怎么来解决这个问题呢?</p>
+<hr>
+<h1 id="进程代码版本切换"><a href="#进程代码版本切换" class="headerlink" title="进程代码版本切换"></a>进程代码版本切换</h1><p>先来看看这份代码:</p>
+<p>code_replace_new.erl (vsn-1):</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">-module</span><span class="params">(code_replace_new)</span>.</span><br><span class="line"><span class="keyword">-export</span><span class="params">([start/<span class="number">0</span>, loop/<span class="number">0</span>])</span>.</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">start</span><span class="params">()</span> -&gt;</span></span><br><span class="line">    spawn(fun loop/0).</span><br><span class="line"><span class="function"><span class="title">loop</span><span class="params">()</span> -&gt;</span></span><br><span class="line">    <span class="keyword">receive</span></span><br><span class="line">        code_switch -&gt;  <span class="comment">%% 处理消息</span></span><br><span class="line">            ?MODULE:loop()</span><br><span class="line">    <span class="keyword">after</span> <span class="number">1500</span> -&gt;</span><br><span class="line">        io:format(<span class="string">"vsn~p~n"</span>, [<span class="number">1</span>]),</span><br><span class="line">        loop()</span><br><span class="line">    <span class="keyword">end</span>.</span><br></pre></td></tr></table></figure>
+
+<p>这份代码在原来的基础上加了接受<code>code_switch</code>消息之后,调用一下<code>?MODULE:loop()</code>,这个就是官方说的全模块调用,执行完这一步之后,进程的驻留模块就会从旧版本变更为新版本,下面我们用实际操作来看一下:</p>
+<p>启动的方法还是跟之前一样,这里就不重复了</p>
+<p>启动之后,我们将打印变为2,然后编译,然后加载,发现还是打印1</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">io:format(<span class="string">"vsn~p~n"</span>, [<span class="number">2</span>]), <span class="comment">%% 1 =&gt; 2</span></span><br></pre></td></tr></table></figure>
+
+<p>不急,我们还没有给进程发送消息让它变更</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">3</span>&gt; P ! code_switch.</span><br><span class="line">vsn2</span><br><span class="line">vsn2</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>更新成功!!</p>
+<p>这样我们就成功将进程的驻留模块从版本一替换到版本二了,也很好的解决了进程被杀掉的问题,那是不是我们每一个进程都需要写这样一个代码切换的代码呢,那岂不是很麻烦,</p>
+<p>其实<code>OTP</code>已经帮我们想好了解决方法,就是<code>gen_server</code>,这个在之后的章节再来详细看看</p>
+<hr>
+<p>今天就这样<del>玩得开心</del></p>
+<p>end</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>梦想基金</div>
+  <button onclick="document.getElementById('post-reward').classList.toggle('active');">
+    赞赏
+  </button>
+  <div id="post-reward">
+      
+      <div>
+        <img src="/images/wechatpay.png" alt="feng19 微信">
+        <p>微信</p>
+      </div>
+      
+      <div>
+        <img src="/images/alipay.png" alt="feng19 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/erlang/" rel="tag"># erlang</a>
+              <a href="/tags/release-upgrade/" rel="tag"># release upgrade</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/10/01/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-2%20gen_server%E7%83%AD%E6%9B%B4/" rel="prev" title="Erlang 发布版本升级-2 gen_server热更">
+      <i class="fa fa-chevron-left"></i> Erlang 发布版本升级-2 gen_server热更
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="http://www.beian.miit.gov.cn/" rel="noopener" target="_blank">粤ICP备20060017号 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">feng19</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"VDj7hFAA8eL6I5UmENlytJhh-gzGzoHsz","app_key":"AOi8dJU8VtxgAuyaPcplC9lP","server_url":null,"security":true};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://feng19.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "https://feng19.com/2017/10/01/Erlang%20%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7-1%20%E4%BB%A3%E7%A0%81%E7%83%AD%E6%9B%B4/";
+    this.page.identifier = "2017/10/01/Erlang 发布版本升级-1 代码热更/";
+    this.page.title = "Erlang 发布版本升级-1 代码热更简介";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://feng19.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>
