@@ -20,20 +20,23 @@
     var CONFIG = {"hostname":"feng19.com","root":"/","scheme":"Mist","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="有部分开发erlang的同学都是用erlang-solutions网站提供的erlang来安装的吧但是在国内用这个站点的仓库地址网速烂到爆,只能用配合梯子来使用偶然的机遇,我发现清华大学开源软件镜像站也有做这个站点的仓库的镜像,地址哈哈,以后不用一升级erlang就皱眉了">
+  <meta name="description" content="事件经过有一天，同事在部署的时候得到了一个莫名奇妙的错误： 1Runtime terminating during boot (&amp;#123;&#39;cannot get bootfile&#39;,&#39;xxx&#x2F;bin&#x2F;start.boot&#39;&amp;#125;)">
 <meta property="og:type" content="article">
-<meta property="og:title" content="erlang-solutions-国内镜像地址">
-<meta property="og:url" content="https://feng19.com/2018/04/08/erlang-solutions-%E5%9B%BD%E5%86%85%E9%95%9C%E5%83%8F%E5%9C%B0%E5%9D%80/">
+<meta property="og:title" content="elixir release package 启动失败调查记录">
+<meta property="og:url" content="https://feng19.com/2024/02/01/debug-elixir-release-package-start-error/">
 <meta property="og:site_name" content="在路上">
-<meta property="og:description" content="有部分开发erlang的同学都是用erlang-solutions网站提供的erlang来安装的吧但是在国内用这个站点的仓库地址网速烂到爆,只能用配合梯子来使用偶然的机遇,我发现清华大学开源软件镜像站也有做这个站点的仓库的镜像,地址哈哈,以后不用一升级erlang就皱眉了">
+<meta property="og:description" content="事件经过有一天，同事在部署的时候得到了一个莫名奇妙的错误： 1Runtime terminating during boot (&amp;#123;&#39;cannot get bootfile&#39;,&#39;xxx&#x2F;bin&#x2F;start.boot&#39;&amp;#125;)">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2018-04-08T08:00:00.000Z">
-<meta property="article:modified_time" content="2022-07-08T07:31:18.921Z">
+<meta property="article:published_time" content="2024-02-01T05:53:03.000Z">
+<meta property="article:modified_time" content="2024-02-01T06:15:55.398Z">
 <meta property="article:author" content="feng19">
 <meta property="article:tag" content="erlang">
+<meta property="article:tag" content="elixir">
+<meta property="article:tag" content="release">
+<meta property="article:tag" content="debug">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="https://feng19.com/2018/04/08/erlang-solutions-%E5%9B%BD%E5%86%85%E9%95%9C%E5%83%8F%E5%9C%B0%E5%9D%80/">
+<link rel="canonical" href="https://feng19.com/2024/02/01/debug-elixir-release-package-start-error/">
 
 
 <script id="page-configurations">
@@ -46,7 +49,7 @@
   };
 </script>
 
-  <title>erlang-solutions-国内镜像地址 | 在路上</title>
+  <title>elixir release package 启动失败调查记录 | 在路上</title>
   
 
 
@@ -177,7 +180,7 @@
 
   <aside class="sidebar">
 
-    <div class="sidebar-inner sidebar-overview-active">
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
       <ul class="sidebar-nav">
         <li class="sidebar-nav-toc">
           文章目录
@@ -189,6 +192,7 @@
 
       <!--noindex-->
       <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#事件经过"><span class="nav-number">1.</span> <span class="nav-text">事件经过</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#深入调查"><span class="nav-number">2.</span> <span class="nav-text">深入调查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
       </section>
       <!--/noindex-->
 
@@ -262,7 +266,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://feng19.com/2018/04/08/erlang-solutions-%E5%9B%BD%E5%86%85%E9%95%9C%E5%83%8F%E5%9C%B0%E5%9D%80/">
+    <link itemprop="mainEntityOfPage" href="https://feng19.com/2024/02/01/debug-elixir-release-package-start-error/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.jpeg">
@@ -275,7 +279,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          erlang-solutions-国内镜像地址
+          elixir release package 启动失败调查记录
         </h1>
 
         <div class="post-meta">
@@ -284,28 +288,22 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2018-04-08 16:00:00" itemprop="dateCreated datePublished" datetime="2018-04-08T16:00:00+08:00">2018-04-08</time>
+              <time title="创建时间：2024-02-01 13:53:03 / 修改时间：14:15:55" itemprop="dateCreated datePublished" datetime="2024-02-01T13:53:03+08:00">2024-02-01</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-07-08 15:31:18" itemprop="dateModified" datetime="2022-07-08T15:31:18+08:00">2022-07-08</time>
-              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/erlang/" itemprop="url" rel="index"><span itemprop="name">erlang</span></a>
+                  <a href="/categories/elixir/" itemprop="url" rel="index"><span itemprop="name">elixir</span></a>
                 </span>
             </span>
 
           
-            <span id="/2018/04/08/erlang-solutions-%E5%9B%BD%E5%86%85%E9%95%9C%E5%83%8F%E5%9C%B0%E5%9D%80/" class="post-meta-item leancloud_visitors" data-flag-title="erlang-solutions-国内镜像地址" title="阅读次数">
+            <span id="/2024/02/01/debug-elixir-release-package-start-error/" class="post-meta-item leancloud_visitors" data-flag-title="elixir release package 启动失败调查记录" title="阅读次数">
               <span class="post-meta-item-icon">
                 <i class="fa fa-eye"></i>
               </span>
@@ -320,8 +318,8 @@
       </span>
       <span class="post-meta-item-text">Disqus：</span>
     
-    <a title="disqus" href="/2018/04/08/erlang-solutions-%E5%9B%BD%E5%86%85%E9%95%9C%E5%83%8F%E5%9C%B0%E5%9D%80/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/04/08/erlang-solutions-国内镜像地址/" itemprop="commentCount"></span>
+    <a title="disqus" href="/2024/02/01/debug-elixir-release-package-start-error/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2024/02/01/debug-elixir-release-package-start-error/" itemprop="commentCount"></span>
     </a>
   </span>
   
@@ -336,20 +334,51 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>有部分开发erlang的同学都是用<a href="https://www.erlang-solutions.com/resources/download.html" target="_blank" rel="noopener">erlang-solutions</a>网站提供的erlang来安装的吧<br>但是在国内用这个站点的仓库地址网速烂到爆,只能用配合梯子来使用<br>偶然的机遇,我发现<a href="https://mirrors.tuna.tsinghua.edu.cn" target="_blank" rel="noopener">清华大学开源软件镜像站</a>也有做这个站点的仓库的镜像,<a href="https://mirrors.tuna.tsinghua.edu.cn/erlang-solutions/" target="_blank" rel="noopener">地址</a><br>哈哈,以后不用一升级erlang就皱眉了</p>
+        <h2 id="事件经过"><a href="#事件经过" class="headerlink" title="事件经过"></a>事件经过</h2><p>有一天，同事在部署的时候得到了一个莫名奇妙的错误：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Runtime terminating during boot (&#123;'cannot get bootfile','xxx/bin/start.boot'&#125;)</span><br></pre></td></tr></table></figure>
+
 <a id="more"></a>
 
-<p>ubuntu 修改如下:</p>
-<p><code>sudo vi /etc/apt/sources.list</code></p>
-<p><code>16.04</code> : </p>
-<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># esl</span><br><span class="line">#deb https://packages.erlang-solutions.com/ubuntu xenial contrib</span><br><span class="line"># qing hua</span><br><span class="line">deb https://mirrors.tuna.tsinghua.edu.cn/erlang-solutions/ubuntu/ xenial contrib</span><br></pre></td></tr></table></figure>
+<p>最后他发现问题出在文件<code>env.sh</code>中:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export RELEASE_DISTRIBUTION=name</span><br><span class="line">export RELEASE_NODE="release_name@$(hostname -i)"</span><br></pre></td></tr></table></figure>
 
-<p><code>18.04</code> : </p>
-<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># esl</span><br><span class="line">#deb https://packages.erlang-solutions.com/ubuntu bionic contrib</span><br><span class="line"># qing hua</span><br><span class="line">deb https://mirrors.tuna.tsinghua.edu.cn/erlang-solutions/ubuntu/ bionic contrib</span><br></pre></td></tr></table></figure>
+<p>问题的原因是：系统升级之后<code>hostname -i</code>的结果与预期不一致造成的。</p>
+<p>系统升级之前 </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hostname -i</span><br><span class="line">192.168.1.2</span><br></pre></td></tr></table></figure>
 
-<hr>
-<p>今天就这样~玩得开心!</p>
-<p>end</p>
+<p>系统升级之后</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hostname -i</span><br><span class="line">fe80::4350:4350:4350:fb17 192.168.1.2</span><br></pre></td></tr></table></figure>
+
+<p>最后造成 <code>RELEASE_NODE</code> 的值为<br><code>&quot;release_name@fe80::4350:4350:4350:fb17 192.168.1.2&quot;</code></p>
+<h2 id="深入调查"><a href="#深入调查" class="headerlink" title="深入调查"></a>深入调查</h2><p>这个错误是怎么触发告警 <code>{&#39;cannot get bootfile&#39;,&#39;xxx/bin/start.boot&#39;}</code> 的？<br>抱着这个问题，我进行了深入的调查</p>
+<p>首先看最外层的执行文件 <code>bin/release_name</code>:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">start () &#123;</span><br><span class="line">  export_release_sys_config</span><br><span class="line">  REL_EXEC="$1"</span><br><span class="line">  shift</span><br><span class="line">  exec "$REL_VSN_DIR/$REL_EXEC" \</span><br><span class="line">    --cookie "$RELEASE_COOKIE" \</span><br><span class="line">    $(release_distribution "$RELEASE_NODE") \</span><br><span class="line">    --erl "-mode $RELEASE_MODE" \</span><br><span class="line">    --erl-config "$RELEASE_SYS_CONFIG" \</span><br><span class="line">    --boot "$REL_VSN_DIR/$RELEASE_BOOT_SCRIPT" \</span><br><span class="line">    --boot-var RELEASE_LIB "$RELEASE_ROOT/lib" \</span><br><span class="line">    --vm-args "$RELEASE_VM_ARGS" "$@"</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>扩展变量之后</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">xxx/releases/0.1.0/elixir --cookie xxx --name release_name@fe80::4350:4350:4350:fb17 192.168.1.2 --erl -mode embedded --erl-config releases/0.1.0/sys --boot releases/0.1.0/start --boot-var RELEASE_LIB rel/release_name/lib --vm-args rel/release_name/releases/0.1.0/vm.args --no-halt</span><br></pre></td></tr></table></figure>
+
+<p>非预期的参数，多了一个 ip</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">--name release_name@fe80::4350:4350:4350:fb17 192.168.1.2</span><br></pre></td></tr></table></figure>
+
+<p>后续参数中也发现 指定了 <code>bootfile</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">--boot releases/0.1.0/start</span><br></pre></td></tr></table></figure>
+
+<p>那为什么还会 抛 <code>cannot get bootfile</code> 异常 呢？</p>
+<p>继续调查，运行 <code>elixir --help</code>:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Usage: elixir [options] [.exs file] [data]</span><br></pre></td></tr></table></figure>
+
+<p>这里发现 elixir 第一个梯队的视为参数，其余视为 <code>file</code> 和 <code>data</code>, </p>
+<p>所以 <code>-name xxx@xxx</code> 之后的都不被视为参数<br>继续深挖一下 elixir 的启动文件，发现通过一个变量，可以输出 erlang 的启动命令 <code>ELIXIR_CLI_DRY_RUN=1 bin/release_name start</code>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">releases/0.1.0/../../erts-14.1/bin/erl -noshell -s elixir start_cli -elixir ansi_enabled true -setcookie xxx -name release_name@fe80::4350:4350:4350:fb17 -extra 192.168.1.2 --erl -elixir config_provider_reboot_mode embedded --erl-config rel/release_name/tmp/release_name-0.1.0-20240131182044-1f61.runtime --boot rel/release_name/releases/0.1.0/start --boot-var RELEASE_LIB rel/release_name/lib --vm-args rel/release_name/releases/0.1.0/vm.args --no-halt</span><br></pre></td></tr></table></figure>
+
+<p>看看正常的输出：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">releases/0.1.0/../../erts-14.1/bin/erl -noshell -s elixir start_cli -elixir ansi_enabled true -elixir config_provider_reboot_mode embedded -setcookie xxx -name release_name@192.168.1.2 -config rel/release_name/tmp/release_name-0.1.0-20240131182242-6338.runtime -boot releases/0.1.0/start -boot_var RELEASE_LIB rel/release_name/lib -args_file rel/release_name/releases/0.1.0/vm.args -extra --no-halt</span><br></pre></td></tr></table></figure>
+
+<p>对比发现， <code>-name</code> 之后开始，参数的顺序不一样， <code>-extra</code> 参数被前置了，翻看 <a href="https://www.erlang.org/doc/man/erl" target="_blank" rel="noopener">erl 文档</a><br>    Plain arguments are not interpreted in any way. They are also stored by the init process and can be retrieved by calling init:get_plain_arguments/0. Plain arguments can occur before the first flag, or after a – flag. Also, <strong>the -extra flag causes everything that follows to become plain arguments.</strong></p>
+<p><code>-extra</code> 参数后面的值都会被视为额外参数，所以怪不得启动 erl 找不到 bootfile，结案。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这次的问题虽然是升级造成，前后版本命令的输出不一致导致的，但是归根结底是因为在错误的地方多了一个空格，多了一个参数，造成了程序的错误解读。<br>这次调查收获，后续遇到类似的启动失败情况，可以设置 <code>ELIXIR_CLI_DRY_RUN=1</code> 环境变量开启命令调试，这样有助于快速发现问题。</p>
+<p>后话：这算一个 bug 吗？</p>
+<p>我的答案是不算！<br>对于 <code>elixir</code> 和 <code>erl</code> 这两个应用来说，文档已经定义好了适用范围，程序也是按定义进行了正确的执行，只是在这个问题上与使用者预期不一致而已；<br>对于 发布包的 <code>bin</code> 执行文件 来说，这也不算一个 bug，总不可能因为有这种问题，去对每一个变量进行防御式编程吧。</p>
 
     </div>
 
@@ -399,6 +428,9 @@
       <footer class="post-footer">
           <div class="post-tags">
               <a href="/tags/erlang/" rel="tag"># erlang</a>
+              <a href="/tags/elixir/" rel="tag"># elixir</a>
+              <a href="/tags/release/" rel="tag"># release</a>
+              <a href="/tags/debug/" rel="tag"># debug</a>
           </div>
 
         
@@ -406,13 +438,10 @@
 
         
     <div class="post-nav">
+      <div class="post-nav-item"></div>
       <div class="post-nav-item">
-    <a href="/2019/01/16/%E7%BB%99rebar3%E5%91%BD%E4%BB%A4%E5%A2%9E%E5%8A%A0shell%E4%B8%8B%E8%87%AA%E5%8A%A8%E8%A1%A5%E5%85%A8/" rel="prev" title="给rebar3命令增加shell下自动补全">
-      <i class="fa fa-chevron-left"></i> 给rebar3命令增加shell下自动补全
-    </a></div>
-      <div class="post-nav-item">
-    <a href="/2017/10/14/Erlang%20%E5%8F%91%E5%B8%83%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E6%B5%81%E7%A8%8B-1/" rel="next" title="Erlang 发布持续集成流程-1">
-      Erlang 发布持续集成流程-1 <i class="fa fa-chevron-right"></i>
+    <a href="/2022/07/08/wechat_for_elixir_usage/" rel="next" title="Elixir 微信(WeChat) SDK 使用指南">
+      Elixir 微信(WeChat) SDK 使用指南 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -626,9 +655,9 @@
 </script>
 <script>
   var disqus_config = function() {
-    this.page.url = "https://feng19.com/2018/04/08/erlang-solutions-%E5%9B%BD%E5%86%85%E9%95%9C%E5%83%8F%E5%9C%B0%E5%9D%80/";
-    this.page.identifier = "2018/04/08/erlang-solutions-国内镜像地址/";
-    this.page.title = "erlang-solutions-国内镜像地址";
+    this.page.url = "https://feng19.com/2024/02/01/debug-elixir-release-package-start-error/";
+    this.page.identifier = "2024/02/01/debug-elixir-release-package-start-error/";
+    this.page.title = "elixir release package 启动失败调查记录";
     };
   NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
     if (window.DISQUS) {

@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://feng19.com/"/>
-  <updated>2022-07-11T08:56:43.995Z</updated>
+  <updated>2024-02-01T06:15:55.398Z</updated>
   <id>https://feng19.com/</id>
   
   <author>
@@ -17,11 +17,39 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>elixir release package 启动失败调查记录</title>
+    <link href="https://feng19.com/2024/02/01/debug-elixir-release-package-start-error/"/>
+    <id>https://feng19.com/2024/02/01/debug-elixir-release-package-start-error/</id>
+    <published>2024-02-01T05:53:03.000Z</published>
+    <updated>2024-02-01T06:15:55.398Z</updated>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;事件经过&quot;&gt;&lt;a href=&quot;#事件经过&quot; class=&quot;headerlink&quot; title=&quot;事件经过&quot;&gt;&lt;/a&gt;事件经过&lt;/h2&gt;&lt;p&gt;有一天，同事在部署的时候得到了一个莫名奇妙的错误：&lt;/p&gt;
+&lt;figure class=&quot;highlight shell&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;Runtime terminating during boot (&amp;#123;&#39;cannot get bootfile&#39;,&#39;xxx/bin/start.boot&#39;&amp;#125;)&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+    
+    </summary>
+    
+    
+      <category term="elixir" scheme="https://feng19.com/categories/elixir/"/>
+    
+    
+      <category term="erlang" scheme="https://feng19.com/tags/erlang/"/>
+    
+      <category term="elixir" scheme="https://feng19.com/tags/elixir/"/>
+    
+      <category term="release" scheme="https://feng19.com/tags/release/"/>
+    
+      <category term="debug" scheme="https://feng19.com/tags/debug/"/>
+    
+  </entry>
+  
+  <entry>
     <title>Elixir 微信(WeChat) SDK 使用指南</title>
     <link href="https://feng19.com/2022/07/08/wechat_for_elixir_usage/"/>
     <id>https://feng19.com/2022/07/08/wechat_for_elixir_usage/</id>
     <published>2022-07-08T07:30:00.000Z</published>
-    <updated>2022-07-11T08:56:43.995Z</updated>
+    <updated>2024-02-01T06:18:32.094Z</updated>
     
     <summary type="html">
     

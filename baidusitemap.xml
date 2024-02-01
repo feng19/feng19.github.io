@@ -2,7 +2,10 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://feng19.com/2022/07/08/wechat_for_elixir_usage/</loc>
-    <lastmod>2022-07-11</lastmod>
+    <lastmod>2024-02-01</lastmod>
+  </url>  <url>
+    <loc>https://feng19.com/2024/02/01/debug-elixir-release-package-start-error/</loc>
+    <lastmod>2024-02-01</lastmod>
   </url>  <url>
     <loc>https://feng19.com/2019/03/03/sf_transform_usage/</loc>
     <lastmod>2022-07-09</lastmod>
