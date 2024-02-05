@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"feng19.com","root":"/","scheme":"Mist","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="最近给 wechat sdk 增加了支付相关的支持，我们来看看怎么使用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Elixir 微信(WeChat) 支付SDK 使用指南">
+<meta property="og:url" content="https://feng19.com/2024/02/05/wechat-pay-for-elixir-usage/">
+<meta property="og:site_name" content="在路上">
+<meta property="og:description" content="最近给 wechat sdk 增加了支付相关的支持，我们来看看怎么使用">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-02-05T09:59:34.000Z">
+<meta property="article:modified_time" content="2024-02-05T10:03:38.348Z">
+<meta property="article:author" content="feng19">
+<meta property="article:tag" content="elixir">
+<meta property="article:tag" content="wechat">
+<meta property="article:tag" content="wechat pay">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://feng19.com/2024/02/05/wechat-pay-for-elixir-usage/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Elixir 微信(WeChat) 支付SDK 使用指南 | 在路上</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?8f25ec0a3f57bade10cde5125c9425d2";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="在路上" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line toggle-line-first"></span>
+        <span class="toggle-line toggle-line-middle"></span>
+        <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">在路上</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">On the road!</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#初始化"><span class="nav-number">1.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用接口"><span class="nav-number">2.</span> <span class="nav-text">使用接口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#设置回调功能"><span class="nav-number">3.</span> <span class="nav-text">设置回调功能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#大功告成"><span class="nav-number">4.</span> <span class="nav-text">大功告成</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="feng19"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">feng19</p>
+  <div class="site-description" itemprop="description">程序路上 成长路上 梦想路上</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">19</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/feng19" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;feng19" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:feng_19@foxmail.com" title="E-Mail → mailto:feng_19@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://feng19.com/2024/02/05/wechat-pay-for-elixir-usage/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="feng19">
+      <meta itemprop="description" content="程序路上 成长路上 梦想路上">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="在路上">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Elixir 微信(WeChat) 支付SDK 使用指南
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2024-02-05 17:59:34 / 修改时间：18:03:38" itemprop="dateCreated datePublished" datetime="2024-02-05T17:59:34+08:00">2024-02-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/wechat/" itemprop="url" rel="index"><span itemprop="name">wechat</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2024/02/05/wechat-pay-for-elixir-usage/" class="post-meta-item leancloud_visitors" data-flag-title="Elixir 微信(WeChat) 支付SDK 使用指南" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2024/02/05/wechat-pay-for-elixir-usage/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2024/02/05/wechat-pay-for-elixir-usage/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>最近给 wechat sdk 增加了支付相关的支持，我们来看看怎么使用</p>
+<a id="more"></a>
+
+<h2 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h2><p>首先，添加依赖:</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">defp</span> <span class="title">deps</span></span> <span class="keyword">do</span>  </span><br><span class="line">  [</span><br><span class="line">	&#123;<span class="symbol">:wechat</span>, <span class="string">"~&gt; 0.14"</span>, <span class="symbol">hex:</span> <span class="symbol">:wechat_sdk</span>&#125;,</span><br><span class="line">	&#123;<span class="symbol">:saxy</span>, <span class="string">"~&gt; 1.2"</span>&#125;,</span><br><span class="line">	&#123;<span class="symbol">:x509</span>, <span class="string">"~&gt; 0.8"</span>&#125;,</span><br><span class="line">	&#123;<span class="symbol">:cachex</span>, <span class="string">"~&gt; 3.6"</span>&#125;</span><br><span class="line">  ]</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>然后定义 Client:</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">defmodule</span> <span class="title">WechatPayDemo.PayClient</span></span> <span class="keyword">do</span>  </span><br><span class="line">  <span class="variable">@moduledoc</span> <span class="keyword">false</span>  </span><br><span class="line">  </span><br><span class="line">  <span class="keyword">use</span> WeChat.Pay,  </span><br><span class="line">    <span class="symbol">mch_id:</span> <span class="string">"mch_id"</span>,  </span><br><span class="line">    <span class="symbol">api_secret_key:</span> <span class="symbol">:runtime_env</span>,  </span><br><span class="line">    <span class="symbol">api_secret_v2_key:</span> <span class="symbol">:runtime_env</span>,  </span><br><span class="line">    <span class="symbol">client_serial_no:</span> <span class="string">"client_serial_no"</span>,  </span><br><span class="line">    <span class="symbol">client_key:</span> &#123;<span class="symbol">:app_dir</span>, <span class="symbol">:wechat_pay_demo</span>, <span class="string">"priv/cert/apiclient_key.pem"</span>&#125;  </span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>上面这些参数都可以从微信支付商户后台中获取到，证书和私钥文件可以通过微信支付官方工具下载。</p>
+<p>然后将 v2 &amp; v3 的 API秘钥 添加到配置文件<code>runtime.exs</code>：</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">config <span class="symbol">:wechat</span>, WechatPayDemo.PayClient,  </span><br><span class="line">  <span class="symbol">api_secret_key:</span> <span class="string">"api_secret_v3_key"</span>,  </span><br><span class="line">  <span class="symbol">api_secret_v2_key:</span> <span class="string">"api_secret_v2_key"</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意：部分 v2 的接口请求时需要用到证书，如：撤销订单，因此如果有使用到这部分接口，必须添加下面的配置</strong></p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">  </span><br><span class="line">config <span class="symbol">:wechat</span>, WechatPayDemo.PayClient,  </span><br><span class="line">  <span class="symbol">api_secret_key:</span> <span class="string">"api_secret_key"</span>,  </span><br><span class="line">  <span class="symbol">api_secret_v2_key:</span> <span class="string">"api_secret_v2_key"</span>,  </span><br><span class="line">  <span class="symbol">v2_ssl:</span> [  </span><br><span class="line">    <span class="symbol">certfile:</span> &#123;<span class="symbol">:app_dir</span>, <span class="symbol">:wechat_pay_demo</span>, <span class="string">"priv/cert/apiclient_cert.pem"</span>&#125;,  </span><br><span class="line">    <span class="symbol">keyfile:</span> &#123;<span class="symbol">:app_dir</span>, <span class="symbol">:wechat_pay_demo</span>, <span class="string">"priv/cert/apiclient_key.pem"</span>&#125;  </span><br><span class="line">  ]</span><br></pre></td></tr></table></figure>
+
+<p>最后别忘将 <code>WechatPayDemo.PayClient</code> 启动起来：</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">start</span></span>(_type, _args) <span class="keyword">do</span>  </span><br><span class="line">  children = [  </span><br><span class="line">    <span class="comment"># Start the Telemetry supervisor  </span></span><br><span class="line">    WechatPayDemoWeb.Telemetry,  </span><br><span class="line">    <span class="comment"># Start the PubSub system  </span></span><br><span class="line">    &#123;Phoenix.PubSub, <span class="symbol">name:</span> WechatPayDemo.PubSub&#125;,  </span><br><span class="line">    <span class="comment"># 启动微信支付  </span></span><br><span class="line">    WechatPayDemo.PayClient,  </span><br><span class="line">    <span class="comment"># Start the Endpoint (http/https)  </span></span><br><span class="line">    WechatPayDemoWeb.Endpoint  </span><br><span class="line">  ]  </span><br><span class="line">  </span><br><span class="line">  opts = [<span class="symbol">strategy:</span> <span class="symbol">:one_for_one</span>, <span class="symbol">name:</span> WechatPayDemo.Supervisor]  </span><br><span class="line">  Supervisor.start_link(children, opts)  </span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="使用接口"><a href="#使用接口" class="headerlink" title="使用接口"></a>使用接口</h2><p>启动之后，就可以开始调用 微信支付的接口了</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">@doc</span> <span class="string">"小程序/jsapi 下单"</span>  </span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">jsapi</span></span>(appid, description, out_trade_no, notify_url, amount, payer) <span class="keyword">do</span>  </span><br><span class="line">  <span class="keyword">with</span> &#123;<span class="symbol">:ok</span>, %&#123;<span class="symbol">status:</span> <span class="number">200</span>, <span class="symbol">body:</span> %&#123;<span class="string">"prepay_id"</span> =&gt; prepay_id&#125;&#125;&#125; &lt;-  </span><br><span class="line">         Transactions.jsapi(  </span><br><span class="line">           <span class="variable">@client</span>,  </span><br><span class="line">           appid,  </span><br><span class="line">           description,  </span><br><span class="line">           out_trade_no,  </span><br><span class="line">           notify_url,  </span><br><span class="line">           amount,  </span><br><span class="line">           payer  </span><br><span class="line">         ) <span class="keyword">do</span>  </span><br><span class="line">    Transactions.request_payment_args(<span class="variable">@client</span>, appid, prepay_id)  </span><br><span class="line">  <span class="keyword">end</span>  </span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="variable">@doc</span> <span class="string">"付款码支付"</span>  </span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">pay_by_scan</span></span>(appid, description, out_trade_no, amount, ip, auth_code) <span class="keyword">do</span>  </span><br><span class="line">  Transactions.pay_by_scan(<span class="variable">@client</span>, %&#123;  </span><br><span class="line">    <span class="string">"appid"</span> =&gt; appid,  </span><br><span class="line">    <span class="string">"mch_id"</span> =&gt; <span class="variable">@client</span>.mch_id(),  </span><br><span class="line">    <span class="string">"nonce_str"</span> =&gt; random_string(),  </span><br><span class="line">    <span class="string">"sign_type"</span> =&gt; <span class="string">"HMAC-SHA256"</span>,  </span><br><span class="line">    <span class="string">"body"</span> =&gt; description,  </span><br><span class="line">    <span class="string">"out_trade_no"</span> =&gt; out_trade_no,  </span><br><span class="line">    <span class="string">"total_fee"</span> =&gt; amount,  </span><br><span class="line">    <span class="string">"fee_type"</span> =&gt; <span class="string">"CNY"</span>,  </span><br><span class="line">    <span class="string">"spbill_create_ip"</span> =&gt; ip,  </span><br><span class="line">    <span class="string">"auth_code"</span> =&gt; auth_code  </span><br><span class="line">  &#125;)  </span><br><span class="line"><span class="keyword">end</span>  </span><br><span class="line">  </span><br><span class="line"><span class="variable">@doc</span> <span class="string">"撤销订单"</span>  </span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">revoke</span></span>(appid, out_trade_no) <span class="keyword">do</span>  </span><br><span class="line">  Transactions.revoke(<span class="variable">@client</span>, %&#123;  </span><br><span class="line">    <span class="string">"appid"</span> =&gt; appid,  </span><br><span class="line">    <span class="string">"mch_id"</span> =&gt; <span class="variable">@client</span>.mch_id(),  </span><br><span class="line">    <span class="string">"out_trade_no"</span> =&gt; out_trade_no,  </span><br><span class="line">    <span class="string">"nonce_str"</span> =&gt; random_string(),  </span><br><span class="line">    <span class="string">"sign_type"</span> =&gt; <span class="string">"HMAC-SHA256"</span>  </span><br><span class="line">  &#125;)<span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="设置回调功能"><a href="#设置回调功能" class="headerlink" title="设置回调功能"></a>设置回调功能</h2><p>有部分接口会用到 微信支付回调 功能，因此 还需要几步 进行设置</p>
+<p>新建建 路由模块 <code>WechatPayDemoWeb.PayRouter</code>:</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">defmodule</span> <span class="title">WechatPayDemoWeb.PayRouter</span></span> <span class="keyword">do</span>  </span><br><span class="line">  <span class="keyword">use</span> Plug.Router  </span><br><span class="line">  </span><br><span class="line">  plug <span class="symbol">:match</span>  </span><br><span class="line">  plug <span class="symbol">:dispatch</span>  </span><br><span class="line">  </span><br><span class="line">  Code.ensure_compiled!(WechatPayDemo.PayClient)  </span><br><span class="line">  </span><br><span class="line">  post <span class="string">"/api/pay/callback"</span>,  </span><br><span class="line">    <span class="symbol">to:</span> WeChat.Pay.EventHandler,  </span><br><span class="line">    <span class="symbol">init_opts:</span> [  </span><br><span class="line">      <span class="symbol">client:</span> WechatPayDemo.PayClient,  </span><br><span class="line">      <span class="symbol">event_handler:</span> &amp;WechatPayDemo.PayEvent.handle_event/<span class="number">3</span>  </span><br><span class="line">    ]  </span><br><span class="line">  </span><br><span class="line">  match _, <span class="symbol">do:</span> conn  </span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>新建 事件处理器 <code>WechatPayDemo.PayEvent</code>:</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">defmodule</span> <span class="title">WechatPayDemo.PayEvent</span></span> <span class="keyword">do</span>  </span><br><span class="line">  <span class="variable">@moduledoc</span> <span class="keyword">false</span>  </span><br><span class="line">  <span class="keyword">require</span> Logger  </span><br><span class="line">  </span><br><span class="line">  <span class="comment"># 处理 回调消息  </span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">handle_event</span></span>(_client, _conn, message) <span class="keyword">do</span>  </span><br><span class="line">    Logger.info(<span class="string">"Got message: <span class="subst">#&#123;inspect(message)&#125;</span>"</span>)  </span><br><span class="line">    id = Map.get(message, <span class="string">"id"</span>)  </span><br><span class="line">    <span class="comment"># 排重处理  </span></span><br><span class="line">    <span class="keyword">case</span> Cachex.get(<span class="symbol">:event_id_cache</span>, id) <span class="keyword">do</span>  </span><br><span class="line">      &#123;<span class="symbol">:ok</span>, <span class="keyword">nil</span>&#125; -&gt;  </span><br><span class="line">        <span class="comment"># handle message here  </span></span><br><span class="line">        Cachex.put(<span class="symbol">:event_id_cache</span>, id, <span class="symbol">:ok</span>)  </span><br><span class="line">        <span class="symbol">:ok</span>  </span><br><span class="line">  </span><br><span class="line">      <span class="comment"># already handled  </span></span><br><span class="line">      &#123;<span class="symbol">:ok</span>, v&#125; -&gt;  </span><br><span class="line">        v  </span><br><span class="line">    <span class="keyword">end</span>  </span><br><span class="line">  <span class="keyword">end</span>  </span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>我们用到了 <code>Cachex</code> 库进行排重处理，所以 还需要 先启动它:</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">start</span></span>(_type, _args) <span class="keyword">do</span>  </span><br><span class="line">  children = [  </span><br><span class="line">    <span class="comment"># Start the Telemetry supervisor  </span></span><br><span class="line">    WechatPayDemoWeb.Telemetry,  </span><br><span class="line">    <span class="comment"># Start the PubSub system  </span></span><br><span class="line">    &#123;Phoenix.PubSub, <span class="symbol">name:</span> WechatPayDemo.PubSub&#125;,  </span><br><span class="line">    <span class="comment"># 启动 事件id 缓存，事件排重用到  </span></span><br><span class="line">    &#123;Cachex,  </span><br><span class="line">     [  </span><br><span class="line">       <span class="symbol">name:</span> <span class="symbol">:event_id_cache</span>,  </span><br><span class="line">       <span class="symbol">expiration:</span> expiration(<span class="symbol">default:</span> <span class="symbol">:timer</span>.hours(<span class="number">25</span>), <span class="symbol">interval:</span> <span class="symbol">:timer</span>.minutes(<span class="number">1</span>))  </span><br><span class="line">     ]&#125;,  </span><br><span class="line">    <span class="comment"># 启动微信支付  </span></span><br><span class="line">    WechatPayDemo.PayClient,  </span><br><span class="line">    <span class="comment"># Start the Endpoint (http/https)  </span></span><br><span class="line">    WechatPayDemoWeb.Endpoint  </span><br><span class="line">  ]  </span><br><span class="line">  </span><br><span class="line">  opts = [<span class="symbol">strategy:</span> <span class="symbol">:one_for_one</span>, <span class="symbol">name:</span> WechatPayDemo.Supervisor]  </span><br><span class="line">  Supervisor.start_link(children, opts)  </span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>最后，我们将 路由模块 放入 Endpoint :</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">plug WechatPayDemoWeb.PayRouter  </span><br><span class="line">  </span><br><span class="line">plug Plug.Parsers,  </span><br><span class="line">  <span class="symbol">parsers:</span> [<span class="symbol">:urlencoded</span>, <span class="symbol">:multipart</span>, <span class="symbol">:json</span>],  </span><br><span class="line">  <span class="symbol">pass:</span> [<span class="string">"*/*"</span>],  </span><br><span class="line">  <span class="symbol">json_decoder:</span> Phoenix.json_library()</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意:<br>WechatPayDemoWeb.PayRouter 的位置比较关键<br>位于 <code>plug Plug.Parsers</code> 的上一行<br>PayRouter 内部需要未解析的 body，所以必须在解析器解析body之前</strong></p>
+<h2 id="大功告成"><a href="#大功告成" class="headerlink" title="大功告成"></a>大功告成</h2><p>至此，微信支付功能 集成就完成了，希望你使用愉快<br>如遇到问题，可以 在 <a href="https://github.com/feng19/wechat" target="_blank" rel="noopener">Repo</a> 下留言或提交 PR</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>梦想基金</div>
+  <button onclick="document.getElementById('post-reward').classList.toggle('active');">
+    赞赏
+  </button>
+  <div id="post-reward">
+      
+      <div>
+        <img src="/images/wechatpay.png" alt="feng19 微信">
+        <p>微信</p>
+      </div>
+      
+      <div>
+        <img src="/images/alipay.png" alt="feng19 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/elixir/" rel="tag"># elixir</a>
+              <a href="/tags/wechat/" rel="tag"># wechat</a>
+              <a href="/tags/wechat-pay/" rel="tag"># wechat pay</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2024/02/01/debug-elixir-release-package-start-error/" rel="next" title="elixir release package 启动失败调查记录">
+      elixir release package 启动失败调查记录 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="http://www.beian.miit.gov.cn/" rel="noopener" target="_blank">粤ICP备20060017号 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">feng19</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"VDj7hFAA8eL6I5UmENlytJhh-gzGzoHsz","app_key":"AOi8dJU8VtxgAuyaPcplC9lP","server_url":null,"security":true};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://feng19.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "https://feng19.com/2024/02/05/wechat-pay-for-elixir-usage/";
+    this.page.identifier = "2024/02/05/wechat-pay-for-elixir-usage/";
+    this.page.title = "Elixir 微信(WeChat) 支付SDK 使用指南";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://feng19.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>

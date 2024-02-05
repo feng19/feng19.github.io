@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://feng19.com/"/>
-  <updated>2024-02-01T06:15:55.398Z</updated>
+  <updated>2024-02-05T10:03:38.348Z</updated>
   <id>https://feng19.com/</id>
   
   <author>
@@ -15,6 +15,31 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Elixir 微信(WeChat) 支付SDK 使用指南</title>
+    <link href="https://feng19.com/2024/02/05/wechat-pay-for-elixir-usage/"/>
+    <id>https://feng19.com/2024/02/05/wechat-pay-for-elixir-usage/</id>
+    <published>2024-02-05T09:59:34.000Z</published>
+    <updated>2024-02-05T10:03:38.348Z</updated>
+    
+    <summary type="html">
+    
+      &lt;p&gt;最近给 wechat sdk 增加了支付相关的支持，我们来看看怎么使用&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="wechat" scheme="https://feng19.com/categories/wechat/"/>
+    
+    
+      <category term="elixir" scheme="https://feng19.com/tags/elixir/"/>
+    
+      <category term="wechat" scheme="https://feng19.com/tags/wechat/"/>
+    
+      <category term="wechat pay" scheme="https://feng19.com/tags/wechat-pay/"/>
+    
+  </entry>
   
   <entry>
     <title>elixir release package 启动失败调查记录</title>
